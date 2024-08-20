@@ -1,0 +1,9 @@
+utilities/__pycache__/
+data/MOL2_files/
+data/PDB_files/
+data/PDBQT_files/
+data/vina_out/
+data/vina_out_2/
+data/smina_out/
+data/smina_out_2/
+data/*.csv
