@@ -1,4 +1,3 @@
 [submodule "utilities/ligandsplitter"]
 	path = utilities/ligandsplitter
 	url = git@github.com:leesch27/ligandsplitter.git
-	branch = main
