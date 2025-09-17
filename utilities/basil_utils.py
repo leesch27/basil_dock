@@ -1,21 +1,119 @@
-from openbabel import pybel
+"""Additional functions used within basil_dock notebooks."""
+import sys, os, glob, re
 from ligandsplitter.ligandanalysis import group_idxes_from_mol
 from ligandsplitter.basefunctions import LigandVariables
 
 vars = LigandVariables()
 
-from rdkit import Chem
-from rdkit.Chem import AllChem,rdFMCS, rdMolAlign
-import py3Dmol
-
-import MDAnalysis as mda
-from MDAnalysis.coordinates import PDB
-import ipywidgets as widgets
-from ipywidgets import Layout, Label, Dropdown, Box, HBox, SelectMultiple
-
 import numpy as np
 import pandas as pd
 import prolif as plf
+
+from rdkit import Chem
+from rdkit.Chem import AllChem,rdFMCS, rdMolAlign
+import py3Dmol
+from ipywidgets import Layout, Label, Dropdown, Box, HBox
+import MDAnalysis as mda 
+
+def get_prot_pockets_data(current_dir, pdb_id, prot_pockets):
+    fpocket_out = "data/PDB_files/" + str(pdb_id)+ "_protein_out/"
+    f_pocket_dir = os.path.join(current_dir, fpocket_out)
+    u_prot = mda.Universe(f"data/PDB_files/{pdb_id}_protein.pdb")
+    for file in os.listdir(f_pocket_dir):
+        if 'env_atm' in file:
+            atoms = []
+            res_and_atoms = []
+            pocket_num = int(file.split('_')[0].replace('pocket',''))
+            out_dir = os.path.join(f_pocket_dir, file)
+            with open(out_dir, 'r') as outfile:
+                data = outfile.readlines()
+            for line in data:
+                split_line = line.split()
+                if len(split_line) > 1:
+                    select_atom_num = split_line[1]
+                    select_atom = split_line[2]
+                    select_residue_num = split_line[5]
+                    # if the residue number for a protein has four digits (greater than 999), split_line[5] will be 
+                    # equal to the x coordinate of the atom as the whitespace between the chain identifier and the 
+                    # residue number will disappear. the following if statement addresses this
+                    if "." in select_residue_num: 
+                        temp_residue_num = re.findall(r'\d+', split_line[4])
+                        temp2_residue_num = ''.join(str(x) for x in temp_residue_num)
+                        select_residue_num = int(temp2_residue_num)
+                    atoms.append(select_atom_num)
+                    md_input1 = "(resid " + str(select_residue_num) + " and name " + str(select_atom) + ")"
+                    res_and_atoms.append(md_input1)
+
+            # get center of docking box
+            atom_string = ', '.join(str(x) for x in atoms)
+            res_and_atom_string = ' or '.join(str(x) for x in res_and_atoms)
+            pocket_mda = u_prot.select_atoms(res_and_atom_string)
+            pocket_center = pocket_mda.center_of_geometry()
+            pocket_center_list = np.ndarray.tolist(pocket_center)
+
+            # get size of docking box
+            ligand_box = pocket_mda.positions.max(axis=0) - pocket_mda.positions.min(axis=0)
+            ligand_box_list = np.ndarray.tolist(ligand_box)
+            ligand_box_list2 = []
+            for value in ligand_box_list:
+                if value < 0:
+                    ligand_box_list2.append(float(value - 5))
+                elif value > 0:
+                    ligand_box_list2.append(float(value + 5))
+                else:
+                    ligand_box_list2.append(float(0))
+        
+            prot_pockets.loc[pocket_num,'center_x'] = pocket_center_list[0]
+            prot_pockets.loc[pocket_num,'center_y'] = pocket_center_list[1]
+            prot_pockets.loc[pocket_num,'center_z'] = pocket_center_list[2]
+            prot_pockets.loc[pocket_num,'size_x'] = abs(ligand_box_list2[0])
+            prot_pockets.loc[pocket_num,'size_y'] = abs(ligand_box_list2[1])
+            prot_pockets.loc[pocket_num,'size_z'] = abs(ligand_box_list2[2])
+
+def fetch_data_files():
+    receptor_files = []
+    prot_pocket_csvs = []
+    ligand_info_csvs = []
+
+    file_location_data = os.path.join('data', 'PDB_files', '*')
+    receptors = glob.glob(file_location_data)
+
+    for file in receptors:
+        if ".pdb" in file:
+            file_short = file.split("/")[-1]
+            pdb_id_initial = file_short.split("_")[:-1]
+            if len(pdb_id_initial[0]) > 1:
+                pdb_id = '_'.join(str(x) for x in pdb_id_initial)
+            else:
+                pdb_id = pdb_id_initial
+            if pdb_id not in receptor_files:
+                receptor_files.append(pdb_id)
+        elif ".cif" in file:
+            file_short = file.split("/")[-1]
+            pdb_id = file_short.split(".")[0]
+            if pdb_id not in receptor_files:
+                receptor_files.append(pdb_id)
+        elif ".ent" in file:
+            file_short = file.split("/")[-1]
+            pdb_id_long = file_short.split(".")[0]
+            if "pdb" in pdb_id_long[:3]:
+                pdb_id = pdb_id_long[3:]
+                if pdb_id not in receptor_files:
+                    receptor_files.append(pdb_id)
+            else:
+                if pdb_id_long not in receptor_files:
+                    receptor_files.append(pdb_id_long)
+    
+    file_location_data = os.path.join('data','*.csv')
+    csvs = glob.glob(file_location_data)
+
+    for file in csvs:
+        if "protein_pockets" in file:
+            prot_pocket_csvs.append(file)
+        elif "ligand_information" in file:
+            ligand_info_csvs.append(file)
+    
+    return receptor_files, prot_pocket_csvs, ligand_info_csvs
 
 def get_ifps(dock_value, dock_engine, select_ligs, prot_pockets, protein_plf):
     all_ligand_plf = []
