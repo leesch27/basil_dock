@@ -82,12 +82,14 @@ def fetch_data_files():
         if ".pdb" in file:
             file_short = file.split("/")[-1]
             pdb_id_initial = file_short.split("_")[:-1]
-            if len(pdb_id_initial[0]) > 1:
-                pdb_id = '_'.join(str(x) for x in pdb_id_initial)
-            else:
-                pdb_id = pdb_id_initial
-            if pdb_id not in receptor_files:
-                receptor_files.append(pdb_id)
+            # do not add "clean" or "protein" to the list of receptor files
+            if "clean" not in pdb_id_initial and "protein" not in pdb_id_initial and "ligand" not in pdb_id_initial:
+                if len(pdb_id_initial[0]) > 1:
+                    pdb_id = '_'.join(str(x) for x in pdb_id_initial)
+                else:
+                    pdb_id = pdb_id_initial
+                if pdb_id not in receptor_files:
+                    receptor_files.append(pdb_id)
         elif ".cif" in file:
             file_short = file.split("/")[-1]
             pdb_id = file_short.split(".")[0]
