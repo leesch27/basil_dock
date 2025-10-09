@@ -1,7 +1,7 @@
 """Additional functions used within basil_dock notebooks."""
 import sys, os, glob, re
-from ligandsplitter.ligandanalysis import group_idxes_from_mol
-from ligandsplitter.basefunctions import LigandVariables
+from ligandsplitter.ligandsplitter.ligandanalysis import group_idxes_from_mol
+from ligandsplitter.ligandsplitter.basefunctions import LigandVariables
 
 vars = LigandVariables()
 
