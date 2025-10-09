@@ -1,5 +1,5 @@
 # **basil_dock - Accessible and Flexible Molecular Docking**
-[**Description**](#description) | [**Requirements**](#requirements)| [**Installation**](#installation) | [**Limitations**](#limitations) | [**Citation**](#citation) | [**License**](#license)
+[**Description**](#description) | [**Requirements**](#requirements)| [**Installation**](#installation) | [**Usage**](#usage) | [**Limitations**](#limitations) | [**Citation**](#citation) | [**License**](#license)
 
 ## Description
 basil_dock is a series of Jupyter notebooks designed to perform interactive and flexible molecular docking procedures, regardless of the user's skill level. <br>
@@ -30,19 +30,21 @@ basil_dock is a series of Jupyter notebooks designed to perform interactive and 
   - view interaction fingerprints between derivative/s and protein
   - visualize protein and derivative docking pose <br>
 
-**4. Machine learning analysis**
-> Description
-  - determine likelihood of ligands/derivatives being orally bioactive using Lipinski's Rule of Five <br>
-
 ## Requirements
+All package and software requirements for basil_dock can be found in the YML files included with this repository. 
 
 ## Installation
 
 **1. Obtaining notebooks** <br>
-To download this repository (containing all notebooks and an environment.yml file with all necessary libraries) to your computer, press the green code button, select "Local", and download the zip file. You can then unzip the file and move it into whatever computer folder you would like.
+To download this repository (containing all notebooks and an environment.yml file with all necessary libraries) to your computer, press the green code button, select "Local", and download the zip file.
 You can also create a virtual codespace, which will not download a folder to your computer but will instead create a virtual environment for you to run the notebooks.
 
-**2. Creating a conda environment** <br>
+From this point, there are two ways to set up the notebooks; you can either use the notebook entitled "00-setup-docking.ipynb" (See "Guided Setup") or set up all environments unassisted (See "Unassisted Setup").
+
+**2A. Guided Setup** <br>
+For assisted setup, open the first notebook "00-setup-docking.ipynb" in VSCode and execute all cells. (explain).
+
+**2B. Unassisted Setup** <br>
 To make library installation easier, an environment.yml file has been included with this repository. (explain anaconda and environments)
 After installing Anaconda on your computer, (explain).
 ```
@@ -50,7 +52,11 @@ conda env create -f environment.yml
 ```
 This will create a new conda environment called "basil_dock", which will be used to access all of the libraries that are needed to run this notebook series.
 
-**3. Opening and using notebooks** <br>
+## Usage
+basil_dock can be executed as a series of jupyter notebooks using JupyterLab or VSCode, or as a Streamlit application
+
+**1. Jupyter Notebooks** <br>
+**. Opening and using notebooks** <br>
 This notebook series can be accessed through a few different applications. JupyterLab, Jupyter Notebooks, and VSCode (explain)
   - JupyterLab
     1. Open a new terminal window and change the conda environment to "basil_dock" <br>
@@ -74,6 +80,11 @@ jupyter nbclassic
     1. Download VSCode on their website
     2. Right-click on the notebook you would like to open. VSCode should be an option. Select VSCode.
     3. Change kernel to "basil_dock" in the app
+
+**2. Streamlit Application** <br>
+```
+streamlit run basildock.py
+```
 
 ## Limitations
 
