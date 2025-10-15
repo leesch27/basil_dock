@@ -84,10 +84,10 @@ def fetch_data_files():
             pdb_id_initial = file_short.split("_")[:-1]
             # do not add "clean" or "protein" to the list of receptor files
             if "clean" not in pdb_id_initial and "protein" not in pdb_id_initial and "ligand" not in pdb_id_initial:
-                if len(pdb_id_initial[0]) > 1:
+                if len(pdb_id_initial) > 1:
                     pdb_id = '_'.join(str(x) for x in pdb_id_initial)
-                else:
-                    pdb_id = pdb_id_initial
+                elif len(pdb_id_initial) == 1:
+                    pdb_id = pdb_id_initial[0]
                 if pdb_id not in receptor_files:
                     receptor_files.append(pdb_id)
         elif ".cif" in file:
@@ -116,6 +116,25 @@ def fetch_data_files():
             ligand_info_csvs.append(file)
     
     return receptor_files, prot_pocket_csvs, ligand_info_csvs
+
+def fetch_docking_data():
+    docking_files = []
+
+    file_location_data = os.path.join('data','*.csv')
+    csvs = glob.glob(file_location_data)
+
+    for file in csvs:
+        if "docking_information" in file:
+            docking_files.append(file)
+        elif("protein_pockets" not in file) and ("ligand_information" not in file) and ("smiles_data" not in file):
+            if "test_train_bioactive_data" in file:
+                continue
+            data = pd.read_csv(file)
+            columns = data.columns
+            if("Frame" in columns) and ("Score" in columns) and ("Ligand" in columns):
+                docking_files.append(file)
+    
+    return docking_files
 
 def get_ifps(dock_value, dock_engine, select_ligs, prot_pockets, protein_plf):
     all_ligand_plf = []
@@ -184,11 +203,15 @@ def get_scores(dock_value, dock_engine, select_ligs, prot_pockets):
                         scores.append(float(all_results[linenum][num][num2].GetProp('Score')))
     return scores
 
-def get_largest_array_column(df):
+def get_largest_array_column(df, docking_type):
     largest_array_column = {}
+    if docking_type == "Blind docking":
+        start_col_num = 2
+    else:
+        start_col_num = 1
     for col_num, column in enumerate(df):
         largest_array = 0
-        if col_num > 1:
+        if col_num > start_col_num:
             for row in df[column]:
                 if int(row) > largest_array:
                     largest_array = int(row)
@@ -203,7 +226,6 @@ def expand_df(all_ifps, df, df2, largest_array_column):
     for key in all_ifps:
         for key_new in key:
             for key_2 in key[key_new]:
-                print(key_new)
                 residues.append(str(key_new[1]))
                 interactions.append(str(key_2))
                 lig_name = str(key_new[0])
@@ -281,6 +303,35 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
                     df2.at[number, (lig_name, res_name, f"Index 4 (Protein) ({key_2}){counter_ind}")] = df_ind_4[counter_ind]
                     counter_ind += 1
                 total_counter += 1
+
+def save_dataframe(df2, dock_engine, pdb_id, lig_value, csv_name = ""):
+    col_names_prelim = df2.keys()
+    col_names = {}
+    for column in col_names_prelim:
+        index1 = column[0]
+        index2 = column[1]
+        index3 = column[2]
+        if "Frame" in index1:
+            col_names[str(column)] = "Frame"
+        elif "Score" in index1:
+            col_names[str(column)] = "Score"
+        elif "Ligand" in index1:
+            col_names[str(column)] = "Ligand"
+        elif "Pocket" in index1:
+            col_names[str(column)] = "Pocket"
+        else:
+            new_name = f"{index2} {index3}"
+            col_names[str(column)] = new_name
+
+    if csv_name == "":
+        csv_title = f'data/{pdb_id}_{str(len(lig_value))}_ligands_docking_information_{dock_engine}.csv'
+    else:
+        csv_title = f'data/{csv_name}.csv'
+    df2 = df2.convert_dtypes()
+    df2.to_csv(csv_title, index = False, header = col_names_prelim)
+    df3 = pd.read_csv(csv_title)
+    df3 = df3.rename(columns = col_names)
+    df3.to_csv(csv_title, index = False, header = col_names)
 
 def compare_poses_form(select_type, select_ligs, prot_pockets, pose_mode):
     all_pock_nums = {}

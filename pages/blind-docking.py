@@ -108,15 +108,19 @@ num_poses = st.session_state.poses_val
 exhaustiveness = st.session_state.exhaust_val
 
 st.title("Blind Docking Parameters")
+with st.status("Running fpocket on the protein, searching for binding pockets...") as status:
+    try:
+        out_csv = f"{current_dir}/data/pocket_descriptors_{pdb_id}.csv"
+        fpocket = subprocess.run(["fpocket", "-f", f"{current_dir}/data/PDB_files/{pdb_id}_protein.pdb", f"-d > {out_csv}"])
+        status.update(label="fpocket run completed!")
+    except subprocess.CalledProcessError as fpocket:
+        print(fpocket.stderr, end="")
+        status.update(label="fpocket run failed! Please check log file for details.")
+
 try:
-    out_csv = f"{current_dir}/data/PDB_files/pocket_descriptors_{pdb_id}.csv"
-    fpocket = subprocess.run(["fpocket", "-f", f"{current_dir}/data/PDB_files/{pdb_id}_protein.pdb", f"-d > {out_csv}"])
-except subprocess.CalledProcessError as fpocket:
-    print(fpocket.stderr, end="")
-try:
-    prot_pockets = pd.read_csv(f'{current_dir}/data/PDB_files/pocket_descriptors_{pdb_id}.csv',sep=' ',index_col=[0])
+    prot_pockets = pd.read_csv(f'{current_dir}/data/pocket_descriptors_{pdb_id}.csv',sep=' ',index_col=[0])
     get_prot_pockets_data(current_dir, pdb_id, prot_pockets)
-    st.write("Potential binding pockets found")
+    st.write("List of potential binding pockets found")
     st.dataframe(prot_pockets)
 except:
     pass
@@ -191,4 +195,5 @@ if st.button("Dock!"):
             print("ERROR: Cannot find 'smina_out_2' folder. Creating folder...")
             os.mkdir(smina_out_2)
 
+st.page_link("pages/docking-analysis.py", label="Analyze docking results", icon="📊")
 st.page_link("pages/set-parameters.py", label="Return to parameter selection", icon="🏠")
