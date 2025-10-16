@@ -19,4 +19,4 @@ from IPython.display import display
 
 sys.path.insert(1, '../utilities/')
 from ligandsplitter.ligandsplitter.ligandanalysis import group_idxes_from_mol, get_ligand_properties, rf_classifier, rf_regressor
-from basil_utils import fetch_data_files, get_ifps, get_scores, get_largest_array_column, expand_df, fill_df, compare_poses_form, compare_poses
+from basil_utils import fetch_data_files, fetch_docking_data, get_ifps, get_scores, get_largest_array_column, expand_df, fill_df, compare_poses_form, compare_poses

@@ -30,11 +30,12 @@ def create_viewer(pdb_id, center, size):
     viewer.setViewStyle({'style':'outline','color':'black','width':0.1})
 
     # add receptor (protein) model to py3Dmol viewer
-    viewer.addModel(open(f'data/PDB_files/{pdb_id}','r').read(),format='pdb')
+    viewer.addModel(open(f'{pdb_id}','r').read(),format='pdb')
     Prot=viewer.getModel()
     Prot.setStyle({'cartoon':{'arrows':True, 'tubes':True, 'style':'oval', 'color':'white'}})
 
     viewer.addBox({"center": dict(x = center[0], y = center[1], z= center[2]), "dimensions": dict(d = abs(size[0]), h = abs(size[1]), w = abs(size[2])), "color" : "red", "opacity" : 0.5})
+    viewer.zoomTo()
     components.html(viewer._make_html(), height = 500,width=500)
 
 def view_ligands(ligand):
@@ -156,4 +157,5 @@ if st.button("Dock!"):
         for ligand in ligs:
             dock_smina(pdb_id, ligand, center_dims, size_dims, exhaustiveness, num_poses)
 
+st.page_link("pages/docking-analysis.py", label="Analyze docking results", icon="📊")
 st.page_link("pages/set-parameters.py", label="Return to parameter selection", icon="🏠")

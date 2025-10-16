@@ -17,11 +17,13 @@ from rdkit import Chem
 
 sys.path.insert(1, 'utilities/')
 from ligandsplitter.ligandsplitter.basefunctions import create_folders, convert_type
-from ligandsplitter.ligandsplitter.ligandsplit import retrieve_pdb_file
 
 def save_keys(key):
     st.session_state[key] = st.session_state["_" + key]
 
+current_dir = create_folders()
+st.session_state._current_dir = current_dir
+save_keys("current_dir")
 # change formatting of sidebar, remove site specific page. only want it accessible if option is selected in form
 pages = {
     "Set parameters to be used for docking": [
@@ -29,7 +31,8 @@ pages = {
     ],
     "Docking methods": [
         st.Page("pages/blind-docking.py", title="Dock ligands to predicted binding sites in a receptor"),
-        st.Page("pages/site-specific-docking.py", title="Dock ligands to a user-defined area of a receptor")
+        st.Page("pages/site-specific-docking.py", title="Dock ligands to a user-defined area of a receptor"),
+        st.Page("pages/docking-analysis.py", title="Analyze docking results")
     ],
     "Get ligands to use in docking": [
         st.Page("pages/advanced-search-ligands.py", title="Search for ligands using RCSB PDB Advanced Search"),
@@ -40,9 +43,6 @@ pages = {
         st.Page("pages/advanced-search-proteins.py", title="Search for receptors using RCSB PDB Advanced Search")
     ]
 }
-current_dir = create_folders()
-st.session_state._current_dir = current_dir
-save_keys("current_dir")
 
 pg = st.navigation(pages)
 pg.run()
