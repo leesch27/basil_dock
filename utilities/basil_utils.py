@@ -136,7 +136,7 @@ def fetch_docking_data():
     
     return docking_files
 
-def get_ifps(dock_value, dock_engine, select_ligs, prot_pockets, protein_plf):
+def get_ifps(dock_value, dock_engine, select_ligs, protein_plf, prot_pockets = pd.DataFrame()):
     all_ligand_plf = []
     ligand_plf_descriptors = []
     all_df = []
@@ -167,7 +167,7 @@ def get_ifps(dock_value, dock_engine, select_ligs, prot_pockets, protein_plf):
                 all_ifps.append(ifp)
     return all_df, all_ifps, all_ligand_plf, ligand_plf_descriptors
 
-def get_scores(dock_value, dock_engine, select_ligs, prot_pockets):
+def get_scores(dock_value, dock_engine, select_ligs, prot_pockets = pd.DataFrame()):
     all_results = []
     scores = [] # get list of scores for each pose
     for h, i in enumerate(select_ligs):
@@ -237,7 +237,7 @@ def expand_df(all_ifps, df, df2, largest_array_column):
                     counter_ind = 0
                     while counter_ind < number_of_ints:
                         df2[(lig_name, res_name, f"Functional group involved ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
-                        df2[(lig_name, res_name, f"Residue type({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
+                        #df2[(lig_name, res_name, f"Residue type({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
                         df2[(lig_name, res_name, f"Distance ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
                         df2[(lig_name, res_name, f"Index 1 (Ligand) ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
                         df2[(lig_name, res_name, f"Index 2 (Ligand) ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
@@ -258,7 +258,7 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
                 x = key[key_new]
                 y = x[key_2]
                 df_groups = [0] * largest_array_column[column_name]
-                df_residue = [0] * largest_array_column[column_name]
+                #df_residue = [0] * largest_array_column[column_name]
                 df_distance = [0] * largest_array_column[column_name]
                 df_ind_1 = [0] * largest_array_column[column_name]
                 df_ind_2 = [0] * largest_array_column[column_name]
@@ -268,7 +268,7 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
                     distance = instance["distance"]
                     df_distance[inst_num] = distance
                     found_res = res_name[:3]
-                    df_residue[inst_num] = (vars.type_dict[found_res])
+                    #df_residue[inst_num] = (vars.type_dict[found_res])
                     parent_index = instance["parent_indices"]
                     if len(parent_index["ligand"]) == 2:
                         df_ind_1[inst_num] = parent_index["ligand"][0]
@@ -295,7 +295,7 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
                 counter_ind = 0
                 while counter_ind < number_of_ints:
                     df2.at[number, (lig_name, res_name, f"Functional group involved ({key_2}){counter_ind}")] = df_groups[counter_ind]
-                    df2.at[number, (lig_name, res_name, f"Residue type({key_2}){counter_ind}")] = df_residue[counter_ind]
+                    #df2.at[number, (lig_name, res_name, f"Residue type({key_2}){counter_ind}")] = df_residue[counter_ind]
                     df2.at[number, (lig_name, res_name, f"Distance ({key_2}){counter_ind}")] = df_distance[counter_ind]
                     df2.at[number, (lig_name, res_name, f"Index 1 (Ligand) ({key_2}){counter_ind}")] = df_ind_1[counter_ind]
                     df2.at[number, (lig_name, res_name, f"Index 2 (Ligand) ({key_2}){counter_ind}")] = df_ind_2[counter_ind]

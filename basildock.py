@@ -16,7 +16,7 @@ from openbabel import pybel
 from rdkit import Chem
 
 sys.path.insert(1, 'utilities/')
-from ligandsplitter.ligandsplitter.basefunctions import create_folders, convert_type
+from ligandsplitter.ligandsplitter.basefunctions import create_folders
 
 def save_keys(key):
     st.session_state[key] = st.session_state["_" + key]
