@@ -137,7 +137,11 @@ if search:
         if len(positives) == 1:
             query = positives[0]
         else:
-            query = ' & '.join(x for x in positives)
+            current_len = 1
+            query = positives[0]
+            while current_len < len(positives):
+                query = query & positives[current_len]
+                current_len += 1
     else:
         print("Invalid.")
     result_prot = list(query())
