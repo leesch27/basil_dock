@@ -124,6 +124,11 @@ def docking_data_comparison(select_type, pose_mode, pdb_id, ligand_number, selec
     view.show()
     components.html(view._make_html(), height = 500,width=1000)
 
+def create_plf_viewer(ifp, plf_ligand, plf_prot):
+    # view docking box in 3Dmol.js viewer prior to docking
+    comp = Complex3D(ifp, plf_ligand, plf_prot)
+    components.html(comp.display()._make_html(), height = 500,width=1000)
+
 st.title("Docking Analysis")
 st.write("Compare poses between ligand conformations")
 data_retrieval = st.file_uploader("Upload Results", accept_multiple_files= False, type="csv", key = "docking_data_upload")
@@ -229,15 +234,31 @@ if data_retrieval is not None:
         selected_lig = row1[0].selectbox("Select Ligand to View", st.session_state.ligs, key = "selected_ligand_interaction")
         selected_pocket = row1[1].selectbox("Select Pocket to View", st.session_state.pockets, key = "selected_pocket_interaction")
         selected_pose = row1[2].selectbox("Select Pose to View", st.session_state.poses, key = "selected_pose_interaction")
+        pose_num = int(st.session_state.selected_pose_interaction) + 1
 
     else:
         row1 = st.columns([1,1])
         selected_lig = row1[0].selectbox("Select Ligand to View", st.session_state.ligs, key = "selected_ligand_interaction")
         selected_pose = row1[1].selectbox("Select Pose to View", st.session_state.poses, key = "selected_pose_interaction")
+        pose_num = int(st.session_state.selected_pose_interaction) + 1
 
     if st.button("View Interactions"):
         # find way to get ifps
-        pass
+        prot_mol = Chem.MolFromPDBFile(f"data/PDB_files/{pdb_id}_protein_H.pdb")
+        protein_plf = plf.Molecule.from_rdkit(prot_mol)
+        if st.session_state.select_type == "Blind docking":
+            lig_suppl = plf.sdf_supplier(f"data/{st.session_state.select_dock}_out_2/{st.session_state.selected_ligand_interaction}_pocket_{st.session_state.selected_pocket_interaction}_{st.session_state.select_dock}_out_2.sdf")
+            fp = plf.Fingerprint(count=True)
+            fp.run_from_iterable(lig_suppl, protein_plf)
+            ifp = fp.generate(lig_suppl[int(st.session_state.selected_pose_interaction)], protein_plf, metadata = True)
+        else:
+            lig_suppl = plf.sdf_supplier(f"data/{st.session_state.select_dock}_out_2/{st.session_state.selected_ligand_interaction}_{st.session_state.select_dock}_out_2.sdf")
+            fp = plf.Fingerprint(count=True)
+            fp.run_from_iterable(lig_suppl, protein_plf)
+            ifp = fp.generate(lig_suppl[int(st.session_state.selected_pose_interaction)], protein_plf, metadata = True)
+        lig_plf = lig_suppl[int(st.session_state.selected_pose_interaction)]
+        create_plf_viewer(ifp, lig_plf, protein_plf)
+
 
     st.write("Determine which features affect ligand binding affinity the strongest")
     if st.button("Calculate Important Binding Features"):
@@ -268,7 +289,12 @@ if data_retrieval is not None:
         if bioactive_method != "Choose Method":
             with st.status("Analyzing feature importances...") as status_classification:
                 lig_bioactive_df = get_ligand_properties(bioactive_df)
-                bioactive_importances = oral_bioactive_classifier(lig_bioactive_df, bioactive_method)
+                bioactive_importances, class_labels = oral_bioactive_classifier(lig_bioactive_df, bioactive_method)
+                for key, value in class_labels.items():
+                    if value == 1:
+                        st.write(f"Predicted orally bioactive value for {key}: Yes")
+                    else:
+                        st.write(f"Predicted orally bioactive value for {key}: No")
                 st.write("Feature importances for oral bioavailability classification using " + bioactive_method + " method")
                 status_classification.update(label="Analysis completed!")
         else:

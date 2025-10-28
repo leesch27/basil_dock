@@ -30,6 +30,9 @@ from basil_utils import get_prot_pockets_data, get_ifps, get_scores, save_datafr
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
+    if st.session_state["_" + key] is None:
+        st.error(f"Please set the {key} parameter in the 'Set parameters' page before proceeding.")
+        st.stop()
 
 def create_viewer(pdb_id, revised_files):
     # view selected pockets in 3Dmol.js viewer prior to docking
@@ -53,7 +56,7 @@ def create_viewer(pdb_id, revised_files):
         if a > 6:
             a = 0
     viewer.zoomTo()
-    components.html(viewer._make_html(), height = 500,width=500)
+    components.html(viewer._make_html(), height = 500,width=1000)
 
 def view_ligands(ligand):
     # view ligand in 3Dmol.js viewer prior to docking

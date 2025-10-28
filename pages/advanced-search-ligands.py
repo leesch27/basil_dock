@@ -67,14 +67,15 @@ except:
     st.session_state.current_dir = current_dir
 
 st.title("Advanced Ligand Search using RCSB PDB")
-st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. alanine)',key="chem_name")
-st.text_input(label="Search by Chemical Name Synonym?", placeholder='Type Synonym Here (e.g. acetylsalicylic acid)',key="chem_syn")
-st.text_input(label="Search by Chemical ID?", placeholder='Type RCSB Chemical ID Here (e.g. AIN)',key="chem_id")
-st.selectbox("Search by Chemical Type?", chem_types, placeholder="Select chemical type", accept_new_options=False, key = "chem_type")
-st.text_input(label="Search by Chemical Brand Name?", placeholder='Type DrugBank Brand Name Here (e.g. Aspirin)',key="chem_brand")
-st.text_input(label="Search by Formula Similarity?", placeholder='Type Ligand Formula Here (e.g. C9H8O4)',key="chem_formula")
-st.text_input(label="Search by Structure Similarity?", placeholder='Type Ligand SMILES Here',key="chem_struct")
-search = st.button("Search for ligands")
+with st.container(border=True):
+    st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. alanine)',key="chem_name")
+    st.text_input(label="Search by Chemical Name Synonym?", placeholder='Type Synonym Here (e.g. acetylsalicylic acid)',key="chem_syn")
+    st.text_input(label="Search by Chemical ID?", placeholder='Type RCSB Chemical ID Here (e.g. AIN)',key="chem_id")
+    st.selectbox("Search by Chemical Type?", chem_types, placeholder="Select chemical type", accept_new_options=False, key = "chem_type")
+    st.text_input(label="Search by Chemical Brand Name?", placeholder='Type DrugBank Brand Name Here (e.g. Aspirin)',key="chem_brand")
+    st.text_input(label="Search by Formula Similarity?", placeholder='Type Ligand Formula Here (e.g. C9H8O4)',key="chem_formula")
+    st.text_input(label="Search by Structure Similarity?", placeholder='Type Ligand SMILES Here',key="chem_struct")
+    search = st.button("Search for ligands")
 
 if search:
     attr = [st.session_state.chem_name, st.session_state.chem_syn, st.session_state.chem_id, st.session_state.chem_type, st.session_state.chem_brand, st.session_state.chem_formula, st.session_state.chem_struct]

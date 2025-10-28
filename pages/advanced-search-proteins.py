@@ -39,32 +39,33 @@ except:
 comp_operators = ["==", ">", ">=", "<", "<="]
 
 st.title("Advanced Receptor Search using RCSB PDB")
-row1 = st.columns([2,1,2])
-selected_lig = row1[0].write("Search for Proteins by Enzyme Classification Name")
-selected_pocket = row1[1].selectbox("Select Operator", ["is", "is not empty"], key = "class_name_operator")
-selected_pose = row1[2].text_input(label="Search by Enzyme Classification Name?", placeholder='Type Enzyme Classification Name', label_visibility = "hidden", key="class_name")
+with st.container(border=True):
+    row1 = st.columns([2,1,2])
+    selected_lig = row1[0].write("Search for Proteins by Enzyme Classification Name")
+    selected_pocket = row1[1].selectbox("Select Operator", ["is", "is not empty"], key = "class_name_operator")
+    selected_pose = row1[2].text_input(label="Search by Enzyme Classification Name?", placeholder='Type Enzyme Classification Name', label_visibility = "hidden", key="class_name")
 
-row2 = st.columns([2,1,2])
-selected_lig = row2[0].write("Search for Proteins by Enzyme Classification Number")
-selected_pocket = row2[1].selectbox("Select Operator", ["is any of", "is not empty"], key = "class_number_operator")
-selected_pose = row2[2].text_input(label="Search by Enzyme Classification Number?", placeholder='Type Enzyme Classification Number', label_visibility = "hidden", key="class_number")
+    row2 = st.columns([2,1,2])
+    selected_lig = row2[0].write("Search for Proteins by Enzyme Classification Number")
+    selected_pocket = row2[1].selectbox("Select Operator", ["is any of", "is not empty"], key = "class_number_operator")
+    selected_pose = row2[2].text_input(label="Search by Enzyme Classification Number?", placeholder='Type Enzyme Classification Number', label_visibility = "hidden", key="class_number")
 
-row3 = st.columns([2,1,2])
-selected_lig = row3[0].write("Search for Proteins by Number of Chains")
-selected_pocket = row3[1].selectbox("Select Operator", comp_operators, key = "num_chain_operator")
-selected_pose = row3[2].text_input(label="Search by Number of Chains?", placeholder='Type Number of Protein Chains Here', label_visibility = "hidden", key="num_chain")
+    row3 = st.columns([2,1,2])
+    selected_lig = row3[0].write("Search for Proteins by Number of Chains")
+    selected_pocket = row3[1].selectbox("Select Operator", comp_operators, key = "num_chain_operator")
+    selected_pose = row3[2].text_input(label="Search by Number of Chains?", placeholder='Type Number of Protein Chains Here', label_visibility = "hidden", key="num_chain")
 
-row4 = st.columns([2,1,2])
-selected_lig = row4[0].write("Search for Proteins by Length of Sequence")
-selected_pocket = row4[1].selectbox("Select Operator", comp_operators, key = "length_seq_operator")
-selected_pose = row4[2].text_input(label="Search by Length of Sequence?", placeholder='Type Length of Sequence Here', label_visibility = "hidden", key="length_seq")
+    row4 = st.columns([2,1,2])
+    selected_lig = row4[0].write("Search for Proteins by Length of Sequence")
+    selected_pocket = row4[1].selectbox("Select Operator", comp_operators, key = "length_seq_operator")
+    selected_pose = row4[2].text_input(label="Search by Length of Sequence?", placeholder='Type Length of Sequence Here', label_visibility = "hidden", key="length_seq")
 
-row5 = st.columns([2,1,2])
-selected_lig = row5[0].write("Search for Proteins by Molecular Weight")
-selected_pocket = row5[1].selectbox("Select Operator", comp_operators, key = "molec_weight_operator")
-selected_pose = row5[2].text_input(label="Search by Molecular Weight?", placeholder='Type Molecular Weight Here', label_visibility = "hidden", key="molec_weight")
+    row5 = st.columns([2,1,2])
+    selected_lig = row5[0].write("Search for Proteins by Molecular Weight")
+    selected_pocket = row5[1].selectbox("Select Operator", comp_operators, key = "molec_weight_operator")
+    selected_pose = row5[2].text_input(label="Search by Molecular Weight?", placeholder='Type Molecular Weight Here', label_visibility = "hidden", key="molec_weight")
 
-search = st.button("Search for proteins")
+    search = st.button("Search for proteins")
 
 if search:
     attr = [st.session_state.class_name, st.session_state.class_number, st.session_state.num_chain, st.session_state.length_seq, st.session_state.molec_weight]

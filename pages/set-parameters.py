@@ -53,6 +53,13 @@ with st.form("enter_docking_parameters"):
         protein = st.session_state._protein_upload
         ligands = st.session_state._ligand_upload
 
+        if protein is None:
+            st.error("Please upload a protein receptor to proceed.")
+            st.stop()
+        if len(ligands) == 0:
+            st.error("Please upload at least one ligand to proceed.")
+            st.stop()
+
         # get receptor data
         with st.status("Retrieving protein and ligands...") as status:
             if protein is not None:
