@@ -441,7 +441,7 @@ def compare_poses(pdb_id, select_type, pose_mode, ligand_number, select_dock, fo
     
         # add reference model of ligand to py3dmol viewer
         if pose_mode == 1:
-            view.addModel(open(f"data/MOL2_files/{ligand_number}_H.mol2",'r').read(),format='mol2')
+            view.addModel(open(f"data/MOL2_files/{ligand_number}.mol2",'r').read(),format='mol2')
             ref_m = view.getModel()
             ref_m.setStyle({},{'stick':{'colorscheme':'magentaCarbon','radius':0.2}})
             print('Reference (' + str(ligand_number) + '): Magenta ')
@@ -488,7 +488,7 @@ def compare_poses(pdb_id, select_type, pose_mode, ligand_number, select_dock, fo
     
         # add reference model of ligand to py3dmol viewer
         if pose_mode == 1:
-            view.addModel(open(f"data/MOL2_files/{ligand_number}_H.mol2",'r').read(),format='mol2')
+            view.addModel(open(f"data/MOL2_files/{ligand_number}.mol2",'r').read(),format='mol2')
             ref_m = view.getModel()
             ref_m.setStyle({},{'stick':{'colorscheme':'magentaCarbon','radius':0.2}})
             print('Reference (' + str(ligand_number) + '): Magenta ')

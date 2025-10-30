@@ -117,6 +117,7 @@ num_poses = st.session_state.poses_val
 exhaustiveness = st.session_state.exhaust_val
 
 st.title("Site-Specific Docking Parameters")
+st.write("Review and set parameters for site-specific docking")
 col1, col2 = st.columns(2)
 with col1:
     centerx = st.number_input("Select Center of Docking Box (X)", key = "x_center")

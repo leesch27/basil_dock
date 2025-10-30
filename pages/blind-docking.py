@@ -130,6 +130,7 @@ num_poses = st.session_state.poses_val
 exhaustiveness = st.session_state.exhaust_val
 
 st.title("Blind Docking Parameters")
+st.write("Review and set parameters for blind docking")
 with st.status("Running fpocket on the protein, searching for binding pockets...") as status:
     # run fpocket to find potential binding pockets on protein
     try:

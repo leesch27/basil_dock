@@ -67,6 +67,7 @@ except:
     st.session_state.current_dir = current_dir
 
 st.title("Advanced Ligand Search using RCSB PDB")
+st.write("Select attributes to search for ligands in the RCSB PDB database. At least one attribute must be selected to perform a search.")
 with st.container(border=True):
     st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. alanine)',key="chem_name")
     st.text_input(label="Search by Chemical Name Synonym?", placeholder='Type Synonym Here (e.g. acetylsalicylic acid)',key="chem_syn")
