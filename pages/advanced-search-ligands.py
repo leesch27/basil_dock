@@ -1,15 +1,18 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import sys, os
+import glob
 
 import py3Dmol
-import rcsbapi
 import requests
 from openbabel import pybel
 from rcsbapi.search import AttributeQuery, Attr, TextQuery, ChemSimilarityQuery
-sys.path.insert(1, '../utilities/')
-from ligandsplitter.ligandsplitter.basefunctions import create_folders, convert_type
-from ligandsplitter.ligandsplitter.ligandgenerate import create_search_for_expo, display_expo_form, create_ligands_from_expo
+
+sys.path.insert(1, 'utilities/')
+from ligandsplitter.ligandsplitter.basefunctions import create_folders
+
+def load_keys(key):
+    st.session_state["_" + key] = st.session_state[key]
 
 def view_ligands(ligand):
     lig = f"{current_dir}/data/test_files/{ligand}_ligand.sdf"
@@ -21,13 +24,6 @@ def view_ligands(ligand):
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)
-
-def load_keys(key):
-    st.session_state["_" + key] = st.session_state[key]
-
-def form_callback():
-    st.write(st.session_state.my_slider)
-    st.write(st.session_state.my_checkbox)
 
 chem_types = ("No Selection","D-beta-peptide, C-gamma linking",
                 "D-gamma-peptide, C-delta linking",
@@ -63,19 +59,24 @@ result_lig_list = []
 if 'result_lig_list' not in st.session_state:
     st.session_state.result_lig_list = []
 
-load_keys("current_dir")
+try:
+    load_keys("current_dir")
+    current_dir = st.session_state.current_dir
+except:
+    current_dir = create_folders()
+    st.session_state.current_dir = current_dir
 
-current_dir = st.session_state.current_dir
-
-st.title("Page title")
-st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. alanine)',key="chem_name")
-st.text_input(label="Search by Chemical Name Synonym?", placeholder='Type Synonym Here (e.g. acetylsalicylic acid)',key="chem_syn")
-st.text_input(label="Search by Chemical ID?", placeholder='Type RCSB Chemical ID Here (e.g. AIN)',key="chem_id")
-st.selectbox("Search by Chemical Type?", chem_types, placeholder="Select chemical type", accept_new_options=False, key = "chem_type")
-st.text_input(label="Search by Chemical Brand Name?", placeholder='Type DrugBank Brand Name Here (e.g. Aspirin)',key="chem_brand")
-st.text_input(label="Search by Formula Similarity?", placeholder='Type Ligand Formula Here (e.g. C9H8O4)',key="chem_formula")
-st.text_input(label="Search by Structure Similarity?", placeholder='Type Ligand SMILES Here',key="chem_struct")
-search = st.button("Search for ligands")
+st.title("Advanced Ligand Search using RCSB PDB")
+st.write("Select attributes to search for ligands in the RCSB PDB database. At least one attribute must be selected to perform a search.")
+with st.container(border=True):
+    st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. alanine)',key="chem_name")
+    st.text_input(label="Search by Chemical Name Synonym?", placeholder='Type Synonym Here (e.g. acetylsalicylic acid)',key="chem_syn")
+    st.text_input(label="Search by Chemical ID?", placeholder='Type RCSB Chemical ID Here (e.g. AIN)',key="chem_id")
+    st.selectbox("Search by Chemical Type?", chem_types, placeholder="Select chemical type", accept_new_options=False, key = "chem_type")
+    st.text_input(label="Search by Chemical Brand Name?", placeholder='Type DrugBank Brand Name Here (e.g. Aspirin)',key="chem_brand")
+    st.text_input(label="Search by Formula Similarity?", placeholder='Type Ligand Formula Here (e.g. C9H8O4)',key="chem_formula")
+    st.text_input(label="Search by Structure Similarity?", placeholder='Type Ligand SMILES Here',key="chem_struct")
+    search = st.button("Search for ligands")
 
 if search:
     attr = [st.session_state.chem_name, st.session_state.chem_syn, st.session_state.chem_id, st.session_state.chem_type, st.session_state.chem_brand, st.session_state.chem_formula, st.session_state.chem_struct]
@@ -119,7 +120,7 @@ if search:
         result_lig_list_temp.append(nonPoly)
     st.session_state.result_lig_list = result_lig_list_temp
 
-# need to fix
+# view ligands that meet criteria
 st.selectbox("Select ligand to view", st.session_state.result_lig_list, key = "lig_of_interest")
 if st.session_state.lig_of_interest != None and st.session_state.lig_of_interest != "":
     try: # try getting ligand as sdf file first
@@ -137,8 +138,18 @@ if st.session_state.lig_of_interest != None and st.session_state.lig_of_interest
         out_mol2 = pybel.Outputfile(filename = f"data/test_files/{ligand}_ligand.sdf", overwrite = True, format='sdf')
         out_mol2.write(pdb_mol2)
     view_ligands(ligand)
+
+# save as MOL2
 if st.button("Download selected ligand as MOL2"):
     #add garbage collection for test files?
     pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
     out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
     out_mol2.write(pdb_mol2)
+
+# clean test files
+if st.button("Clean test folder"):
+    testing_data = os.path.join('data', 'test_files', '*')
+    testing_files = glob.glob(testing_data)
+    for file in testing_files:
+        os.remove(file)
+    st.write("Test folder cleaned.")

@@ -42,16 +42,41 @@ You can also create a virtual codespace, which will not download a folder to you
 From this point, there are two ways to set up the notebooks; you can either use the notebook entitled "00-setup-docking.ipynb" (See "Guided Setup") or set up all environments unassisted (See "Unassisted Setup").
 
 **2A. Guided Setup** <br>
-For assisted setup, open the first notebook "00-setup-docking.ipynb" in VSCode and execute all cells. (explain).
+For assisted setup, open the first notebook "00-setup-docking.ipynb" in VSCode and execute cells as described in the notebook. 
 
 **2B. Unassisted Setup** <br>
 To make library installation easier, an environment.yml file has been included with this repository. (explain anaconda and environments)
-After installing Anaconda on your computer, (explain).
+After installing Anaconda on your computer, the conda command can be used to install all necessary dependencies.
+
+MacOS Installation
 ```
-conda env create -f environment.yml
+conda env create -f environment_macos.yml
+```
+```
+conda activate basil_dock
+```
+
+Windows Installation
+```
+conda env create -f environment_windows.yml
+```
+```
+conda activate basil_dock
+```
+
+Linux Installation
+```
+conda env create -f environment_linux.yml
+```
+```
+conda activate basil_dock
 ```
 This will create a new conda environment called "basil_dock", which will be used to access all of the libraries that are needed to run this notebook series.
 
+If you would rather install using pip, use the command below to install all dependencies.
+```
+pip install requirements.txt
+```
 ## Usage
 basil_dock can be executed as a series of jupyter notebooks using JupyterLab or VSCode, or as a Streamlit application
 

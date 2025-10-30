@@ -16,7 +16,6 @@ from openbabel import pybel
 from rdkit import Chem
 
 sys.path.insert(1, 'utilities/')
-from ligandsplitter.ligandsplitter.basefunctions import create_folders
 from ligandsplitter.ligandsplitter.ligandsplit import retrieve_pdb_file
 
 def save_keys(key):
@@ -53,6 +52,13 @@ with st.form("enter_docking_parameters"):
         filenames = []
         protein = st.session_state._protein_upload
         ligands = st.session_state._ligand_upload
+
+        if protein is None:
+            st.error("Please upload a protein receptor to proceed.")
+            st.stop()
+        if len(ligands) == 0:
+            st.error("Please upload at least one ligand to proceed.")
+            st.stop()
 
         # get receptor data
         with st.status("Retrieving protein and ligands...") as status:
@@ -133,6 +139,17 @@ with st.form("enter_docking_parameters"):
                 filenames_pdbqt.append(s)
                 ligand.write(filename = s, format='pdbqt', overwrite=True)
                 n += 1
+            
+            # generate smiles string for each ligand
+            ligand_smiles = []
+            for i in ligs:
+                mol = Chem.MolFromMol2File("data/MOL2_files/" + str(i) + "_H.mol2",sanitize=False)
+                select_mol_smile = Chem.MolToSmiles(mol)
+                ligand_smiles.append(select_mol_smile)
+            # save ligand data to csv
+            ligand_smiles_data = pd.DataFrame({"filename_hydrogens": filenames_H, "smiles": ligand_smiles})
+            ligand_smiles_data.to_csv(f'data/ligand_smiles_data_id_{pdb_id}_{str(len(ligs))}.csv', index = False)
+            
             st.session_state._ligs = ligs
             st.session_state._filenames = filenames
             st.session_state._filenames_H = filenames_H
