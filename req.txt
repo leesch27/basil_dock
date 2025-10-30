@@ -1,7 +1,6 @@
 babel
 biopandas
 biopython
-fpocket
 matplotlib
 mdanalysis
 numpy
