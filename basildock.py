@@ -9,12 +9,6 @@ import re
 import glob
 import subprocess
 
-from Bio.PDB import PDBList
-import MDAnalysis as mda 
-from MDAnalysis.coordinates import PDB
-from openbabel import pybel
-from rdkit import Chem
-
 sys.path.insert(1, 'utilities/')
 from ligandsplitter.ligandsplitter.basefunctions import create_folders
 
