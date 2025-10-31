@@ -15,8 +15,7 @@ from MDAnalysis.coordinates import PDB
 from openbabel import pybel
 from rdkit import Chem
 
-sys.path.insert(1, 'utilities/')
-from ligandsplitter.ligandsplitter.ligandsplit import retrieve_pdb_file
+from ligandsplitter.ligandsplit import retrieve_pdb_file
 
 def save_keys(key):
     st.session_state[key] = st.session_state["_" + key]

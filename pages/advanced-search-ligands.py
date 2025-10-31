@@ -9,7 +9,7 @@ from openbabel import pybel
 from rcsbapi.search import AttributeQuery, Attr, TextQuery, ChemSimilarityQuery
 
 sys.path.insert(1, 'utilities/')
-from ligandsplitter.ligandsplitter.basefunctions import create_folders
+from ligandsplitter.basefunctions import create_folders
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]

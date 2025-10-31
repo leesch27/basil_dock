@@ -19,8 +19,7 @@ import prolif as plf
 from prolif.plotting.complex3d import Complex3D
 from IPython.display import display
 
-sys.path.insert(1, '../utilities/')
-from ligandsplitter.ligandsplitter.ligandanalysis import group_idxes_from_mol, get_ligand_properties, oral_bioactive_classifier, interaction_regressor
+from ligandsplitter.ligandanalysis import get_ligand_properties, oral_bioactive_classifier, interaction_regressor
 
 def docking_data_comparison(select_type, pose_mode, pdb_id, ligand_number, select_dock, form_items1, form_items2):
     if select_type == "Blind docking":
