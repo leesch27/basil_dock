@@ -259,6 +259,7 @@ dependencies:
       - docutils==0.17.1
       - iniconfig==2.0.0
       - ipython-genutils==0.2.0
+      - ligandsplitter==0.0.2
       - mmcif-pdbx==2.0.1
       - nbclassic==1.1.0
       - pdb2pqr==3.6.2

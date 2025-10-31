@@ -9,9 +9,8 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, rdCoordGen
 import py3Dmol
 
-sys.path.insert(1, 'utilities/')
-from ligandsplitter.ligandsplitter.basefunctions import create_folders
-from ligandsplitter.ligandsplitter.ligandderive import get_func_groups, create_derivative_files
+from ligandsplitter.basefunctions import create_folders
+from ligandsplitter.ligandderive import get_func_groups, create_derivative_files
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]

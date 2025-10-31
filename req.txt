@@ -1,6 +1,7 @@
 babel
 biopandas
 biopython
+ligandsplitter
 matplotlib
 mdanalysis
 numpy

@@ -9,8 +9,7 @@ import re
 import glob
 import subprocess
 
-sys.path.insert(1, 'utilities/')
-from ligandsplitter.ligandsplitter.basefunctions import create_folders
+from ligandsplitter.basefunctions import create_folders
 
 def save_keys(key):
     st.session_state[key] = st.session_state["_" + key]
