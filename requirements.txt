@@ -4,7 +4,6 @@ ligandsplitter==0.0.3
 matplotlib
 mdanalysis==2.7.0
 numpy==1.26.4
-openbabel==3.1.1
 pandas==2.1.4
 pdb2pqr==3.6.2
 prolif==2.0.3
