@@ -11,7 +11,7 @@ pyqt5==5.15.11
 rcsb-api==1.3.0
 rdkit
 requests
-smina==2020.12.10
+smina
 streamlit
 vina==1.3.0
 pandas
