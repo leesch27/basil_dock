@@ -12,5 +12,5 @@ rcsb-api==1.3.0
 rdkit
 requests
 streamlit
-vina==1.3.0
+vina
 pandas
