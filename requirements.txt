@@ -11,8 +11,6 @@ pyqt5==5.15.11
 rcsb-api==1.3.0
 rdkit
 requests
-scipy==1.14.0
-seaborn==0.13.2
 smina==2020.12.10
 streamlit
 vina==1.3.0
