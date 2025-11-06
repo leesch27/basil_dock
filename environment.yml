@@ -118,7 +118,7 @@ dependencies:
   - libgfortran5=13.2.0
   - libglib=2.80.3
   - libiconv=1.17
-  - libintl=0.22.5
+  - libintl
   - libjpeg-turbo=3.0.0
   - liblapack=3.9.0
   - libnetcdf=4.9.2
