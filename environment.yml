@@ -114,11 +114,10 @@ dependencies:
   - libev=4.33
   - libexpat=2.6.2
   - libffi=3.4.2
-  - libgfortran
+  - libgfortran-ng=13.2.0
   - libgfortran5=13.2.0
   - libglib=2.80.3
   - libiconv=1.17
-  - libintl
   - libjpeg-turbo=3.0.0
   - liblapack=3.9.0
   - libnetcdf=4.9.2
@@ -171,8 +170,8 @@ dependencies:
   - pexpect=4.9.0
   - pickleshare=0.7.5
   - pillow=10.4.0
+  - pixman=0.44.2
   - pip=25.2
-  - pixman=0.43.4
   - pkgutil-resolve-name=1.3.10
   - platformdirs=4.2.2
   - prolif=2.0.3
@@ -186,8 +185,6 @@ dependencies:
   - pycparser=2.22
   - pyedr=0.8.0
   - pygments=2.18.0
-  - pyobjc-core=10.3.1
-  - pyobjc-framework-cocoa=10.3.1
   - pyparsing=3.1.2
   - pysocks=1.7.1
   - python=3.12.4
@@ -262,8 +259,8 @@ dependencies:
       - docutils==0.17.1
       - iniconfig==2.0.0
       - ipython-genutils==0.2.0
-      - mmcif-pdbx==2.0.1
       - ligandsplitter==0.0.3
+      - mmcif-pdbx==2.0.1
       - nbclassic==1.1.0
       - pdb2pqr==3.6.2
       - pluggy==1.5.0
