@@ -24,9 +24,9 @@ import warnings
 warnings.filterwarnings("ignore")
 warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
-sys.path.insert(1, '../utilities/')
-from utils import pdbqt_to_sdf
-from basil_utils import get_ifps, get_scores, save_dataframe, get_largest_array_column, expand_df, fill_df
+#sys.path.insert(1, '../utilities/')
+from utilities.utils import pdbqt_to_sdf
+from utilities.basil_utils import get_ifps, get_scores, save_dataframe, get_largest_array_column, expand_df, fill_df
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]

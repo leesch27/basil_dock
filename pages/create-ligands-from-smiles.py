@@ -6,8 +6,7 @@ from rdkit import Chem
 from openbabel import pybel
 import py3Dmol
 
-sys.path.insert(1, '../utilities/')
-from ligandsplitter.ligandsplitter.basefunctions import create_folders
+from ligandsplitter.basefunctions import create_folders
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
