@@ -9,14 +9,6 @@ import re
 import glob
 import subprocess
 
-from ligandsplitter.basefunctions import create_folders
-
-def save_keys(key):
-    st.session_state[key] = st.session_state["_" + key]
-
-current_dir = create_folders()
-st.session_state._current_dir = current_dir
-save_keys("current_dir")
 # change formatting of sidebar, remove site specific page. only want it accessible if option is selected in form
 pages = {
     "Set parameters to be used for docking": [

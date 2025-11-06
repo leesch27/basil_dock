@@ -15,6 +15,7 @@ from MDAnalysis.coordinates import PDB
 from openbabel import pybel
 from rdkit import Chem
 
+from ligandsplitter.basefunctions import create_folders
 from ligandsplitter.ligandsplit import retrieve_pdb_file
 
 def save_keys(key):
@@ -22,6 +23,8 @@ def save_keys(key):
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
+
+new_dir = os.path.expanduser("~")
 
 with st.form("enter_docking_parameters"):
     header = st.columns([1,1])
@@ -43,8 +46,10 @@ with st.form("enter_docking_parameters"):
     poses = row4[0].slider("Select Number of Poses to Generate", 1, 10, 5, key = "_poses_val")
 
     row5 = st.columns([1,1])
-    dir = row5[0].write(f"Data will be saved to {os.getcwd()}/data")
-    submitted = row5[1].form_submit_button("Submit Parameters")
+    dir_path = row5[0].text_input(label="Where to Save Data?", placeholder='Type Data Path here', value = new_dir, key="path_name")
+    
+    row6 = st.columns([1,1])
+    submitted = row6[1].form_submit_button("Submit Parameters")
     
     if submitted:
         ligs = []
@@ -57,6 +62,14 @@ with st.form("enter_docking_parameters"):
             st.stop()
         if len(ligands) == 0:
             st.error("Please upload at least one ligand to proceed.")
+            st.stop()
+        try:
+            current_dir = create_folders(dir =st.session_state.path_name)
+            st.session_state._current_dir = current_dir
+            save_keys("current_dir")
+            st.write(f"Data will be saved to {st.session_state.path_name}/data")
+        except:
+            st.error("Error creating directories. Make sure the specified path is valid.")
             st.stop()
 
         # get receptor data
@@ -79,7 +92,7 @@ with st.form("enter_docking_parameters"):
                 pqr_file = f"data/PDB_files/{pdb_id}_protein.pqr"
                 output_file = f"data/PDB_files/{pdb_id}_protein_H.pdb"
                 try:
-                    pqr = subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
+                    pqr = subprocess.run([f"{sys.executable}", "pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
                     to_pdbqt = mda.Universe(pqr_file)
                     to_pdbqt.atoms.write(f"data/PDBQT_files/{pdb_id}_protein.pdbqt")
 
@@ -101,17 +114,17 @@ with st.form("enter_docking_parameters"):
                 ligand_id_proto = ligand_name.split(".")[:-1]
                 ligand_id = "".join(str(x) for x in ligand_id_proto)
                 ligand_extension = ligand_name.split(".")[-1]
+                stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+                bytes_data = stringio.read()
+                with open(f"data/MOL2_files/{ligand_name}", "w+") as datafile:
+                    datafile.write(bytes_data)
                 if ligand_extension == "sdf":
-                    pdb_mol2 = [m for m in pybel.readfile(filename = ligand_name, format='sdf')][0]
+                    pdb_mol2 = [m for m in pybel.readfile(filename = f"data/MOL2_files/{ligand_name}", format='sdf')][0]
                     out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{ligand_id}.mol2", overwrite = True, format='mol2')
                     out_mol2.write(pdb_mol2)
                     ligs.append(ligand_id)
                     filenames.append(f"data/MOL2_files/{ligand_id}.mol2")
                 else:
-                    stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-                    bytes_data = stringio.read()
-                    with open(f"data/MOL2_files/{ligand_name}", "w+") as datafile:
-                        datafile.write(bytes_data)
                     ligs.append(ligand_id)
                     filenames.append(f"data/MOL2_files/{ligand_id}.mol2")
             # ligand sanitization
