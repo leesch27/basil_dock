@@ -29,7 +29,8 @@ cur_dir = os.getcwd()
 local = True
 if "mount/src" in cur_dir:
     local = False
-    
+
+print(f"Local mode: {local}")
 with st.form("enter_docking_parameters"):
     header = st.columns([1,1])
     header[0].subheader("basil dock Settings")
@@ -88,7 +89,17 @@ with st.form("enter_docking_parameters"):
                 pqr_file = f"data/PDB_files/{pdb_id}_protein.pqr"
                 output_file = f"data/PDB_files/{pdb_id}_protein_H.pdb"
                 try:
-                    pqr = subprocess.run([f"{sys.executable}", "pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
+                    if local:
+                        pqr = subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
+                    else:
+                        with open(output_file, "w+") as out_file:
+                            pqr = subprocess.run([f"{sys.executable}", "pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"], text= True, check=True, stdout=out_file)
+                            with open(output_file, "r") as out_check:
+                                for line in out_check:
+                                    print(line)
+                            with open(pqr_file, "r") as pqr_check:
+                                for line in pqr_check:
+                                    print(line)
                     to_pdbqt = mda.Universe(pqr_file)
                     to_pdbqt.atoms.write(f"data/PDBQT_files/{pdb_id}_protein.pdbqt")
 
