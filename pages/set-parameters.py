@@ -207,7 +207,7 @@ if not local and "_pdb_id" in st.session_state:
     #f"data/PDB_files/{pdb_id}_protein_H.pdbqt"
     pdb_file = open(f"data/PDB_files/{pdb_id}_protein.pdb", "r", encoding="utf-8")
     pdb_H_file = open(f"data/PDB_files/{pdb_id}_protein_H.pdb", "r", encoding="utf-8")
-    pdbqt_file = open(f"data/PDB_files/{pdb_id}_protein_H.pdbqt", "r", encoding="utf-8")
+    #pdbqt_file = open(f"data/PDBQT_files/{pdb_id}_protein.pdbqt", "r", encoding="utf-8")
 
     with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
         for item in filenames:
@@ -229,10 +229,7 @@ if not local and "_pdb_id" in st.session_state:
         label="Download Sanitized Receptor (PDB, Protonated)",
         data=pdb_H_file.read(),
         file_name=f"{pdb_id}_protein_H.pdb",)
-    st.download_button(
-        label="Download Sanitized Receptor (PDBQT)",
-        data=pdbqt_file.read(),
-        file_name=f"{pdb_id}_protein_H.pdbqt",)
+    
     st.download_button(
         label="Download Ligand Files (MOL2)",
         data=buf_mol2.getvalue(),
@@ -252,7 +249,7 @@ if not local and "_pdb_id" in st.session_state:
     if st.button("Proceed to Docking Pages"):
         pdb_file.close()
         pdb_H_file.close()
-        pdbqt_file.close()
+        #pdbqt_file.close()
         if dock_method == "Blind Docking":
             st.switch_page("pages/blind-docking.py")
         else:
