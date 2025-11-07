@@ -9,6 +9,7 @@ import re
 import glob
 import subprocess
 import zipfile
+from pdb2pqr import run_pdb2pqr
 
 from Bio.PDB import PDBList
 import MDAnalysis as mda 
@@ -92,7 +93,8 @@ with st.form("enter_docking_parameters"):
                     if local:
                         pqr = subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
                     else:
-                        pqr = subprocess.run([f"{sys.executable}", "pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"], text= True, check=True)
+                        run_pdb2pqr(["--pdb-output", output_file, "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
+                        #pqr = subprocess.run([f"{sys.executable}", "pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
                         with open(output_file, "r") as out_check:
                             for line in out_check:
                                 print(line)

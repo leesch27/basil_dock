@@ -262,7 +262,7 @@ dependencies:
       - ligandsplitter==0.0.3
       - mmcif-pdbx==2.0.1
       - nbclassic==1.1.0
-      - pdb2pqr==3.6.2
+      - pdb2pqr==3.7.1
       - pluggy==1.5.0
       - propka==3.5.1
       - py3dmol==2.3.0
