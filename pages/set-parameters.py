@@ -1,6 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
-from io import StringIO
+from io import StringIO, BytesIO
 import sys, os
 import numpy as np
 import pandas as pd
@@ -8,6 +8,7 @@ import numbers
 import re
 import glob
 import subprocess
+import zipfile
 
 from Bio.PDB import PDBList
 import MDAnalysis as mda 
@@ -24,8 +25,11 @@ def save_keys(key):
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
 
-new_dir = os.path.expanduser("~")
-
+cur_dir = os.getcwd()
+local = True
+if "mount/src" in cur_dir:
+    local = False
+    
 with st.form("enter_docking_parameters"):
     header = st.columns([1,1])
     header[0].subheader("basil dock Settings")
@@ -46,10 +50,7 @@ with st.form("enter_docking_parameters"):
     poses = row4[0].slider("Select Number of Poses to Generate", 1, 10, 5, key = "_poses_val")
 
     row5 = st.columns([1,1])
-    dir_path = row5[0].text_input(label="Where to Save Data?", placeholder='Type Data Path here', value = new_dir, key="path_name")
-    
-    row6 = st.columns([1,1])
-    submitted = row6[1].form_submit_button("Submit Parameters")
+    submitted = row5[1].form_submit_button("Submit Parameters")
     
     if submitted:
         ligs = []
@@ -63,14 +64,9 @@ with st.form("enter_docking_parameters"):
         if len(ligands) == 0:
             st.error("Please upload at least one ligand to proceed.")
             st.stop()
-        try:
-            current_dir = create_folders(dir =st.session_state.path_name)
-            st.session_state._current_dir = current_dir
-            save_keys("current_dir")
-            st.write(f"Data will be saved to {st.session_state.path_name}/data")
-        except:
-            st.error("Error creating directories. Make sure the specified path is valid.")
-            st.stop()
+
+        current_dir = create_folders()
+        st.session_state._current_dir = current_dir
 
         # get receptor data
         with st.status("Retrieving protein and ligands...") as status:
@@ -169,6 +165,7 @@ with st.form("enter_docking_parameters"):
             status.update(label="Seperating and sanitizing of molecules completed!")
         
         dock_method = st.session_state.docking_method
+        save_keys("current_dir")
         save_keys("protein_upload")
         save_keys("ligand_upload")
         save_keys("docking_engine")
@@ -179,8 +176,76 @@ with st.form("enter_docking_parameters"):
         save_keys("filenames_H")
         save_keys("filenames_pdbqt")
         save_keys("pdb_id")
+        if local:
+            if dock_method == "Blind Docking":
+                st.switch_page("pages/blind-docking.py")
+            else:
+                st.switch_page("pages/site-specific-docking.py")
+if not local and "_pdb_id" in st.session_state:
+    st.write("Make sure to download your receptor and ligand files before proceeding!")
+    filenames = st.session_state._filenames
+    filenames_H = st.session_state._filenames_H
+    filenames_pdbqt = st.session_state._filenames_pdbqt
+    pdb_id = st.session_state._pdb_id
+
+    buf_mol2 = BytesIO()
+    buf_mol2_H = BytesIO()
+    buf_pdbqt = BytesIO()
+    #f"data/PDB_files/{pdb_id}_protein.pdb"
+    #f"data/PDB_files/{pdb_id}_protein_H.pdb"
+    #f"data/PDB_files/{pdb_id}_protein_H.pdbqt"
+    pdb_file = open(f"data/PDB_files/{pdb_id}_protein.pdb", "r", encoding="utf-8")
+    pdb_H_file = open(f"data/PDB_files/{pdb_id}_protein_H.pdb", "r", encoding="utf-8")
+    pdbqt_file = open(f"data/PDB_files/{pdb_id}_protein_H.pdbqt", "r", encoding="utf-8")
+
+    with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
+        for item in filenames:
+            lig_mol_zip.write(item, os.path.basename(item))
+
+    with zipfile.ZipFile(buf_mol2_H, "x") as lig_mol_zip_H:
+        for item in filenames_H:
+            lig_mol_zip_H.write(item, os.path.basename(item))
+
+    with zipfile.ZipFile(buf_pdbqt, "x") as lig_mol_zip:
+        for item in filenames_pdbqt:
+            lig_mol_zip.write(item, os.path.basename(item))
+
+    st.download_button(
+        label="Download Sanitized Receptor (PDB)",
+        data=pdb_file.read(),
+        file_name=f"{pdb_id}_protein.pdb",)
+    st.download_button(
+        label="Download Sanitized Receptor (PDB, Protonated)",
+        data=pdb_H_file.read(),
+        file_name=f"{pdb_id}_protein_H.pdb",)
+    st.download_button(
+        label="Download Sanitized Receptor (PDBQT)",
+        data=pdbqt_file.read(),
+        file_name=f"{pdb_id}_protein_H.pdbqt",)
+    st.download_button(
+        label="Download Ligand Files (MOL2)",
+        data=buf_mol2.getvalue(),
+        file_name=f"{pdb_id}_ligands_mol2.zip",)
+    st.download_button(
+        label="Download Ligand Files (MOL2, Protonated)",
+        data=buf_mol2_H.getvalue(),
+        file_name=f"{pdb_id}_ligands_H.mol2.zip",)
+    st.download_button(
+        label="Download Ligand Files (PDBQT)",
+        data=buf_pdbqt.getvalue(),
+        file_name=f"{pdb_id}_ligands_pdbqt.zip",)
+    st.download_button(
+        label="Download Ligand SMILES Information (CSV)",
+        data=ligand_smiles_data.to_csv().encode("utf-8"),
+        file_name=f"ligand_smiles_data_id_{pdb_id}_{str(len(ligs))}.csv",)
+    if st.button("Proceed to Docking Pages"):
+        pdb_file.close()
+        pdb_H_file.close()
+        pdbqt_file.close()
         if dock_method == "Blind Docking":
             st.switch_page("pages/blind-docking.py")
         else:
             st.switch_page("pages/site-specific-docking.py")
+        
+            
 
