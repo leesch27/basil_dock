@@ -22,6 +22,11 @@ def view_ligands(ligand):
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)
 
+cur_dir = os.getcwd()
+local = True
+if "mount/src" in cur_dir:
+    local = False
+
 try:
     load_keys("current_dir")
     current_dir = st.session_state.current_dir
@@ -50,5 +55,7 @@ if st.button("Generate Ligand from SMILES"):
             view_ligands(st.session_state.lig_name)
         elif lig_test is None:
             st.error("Invalid SMILES string.")
+    if local == False:
+        pass
     else:
         st.error("Please provide both a ligand name and a SMILES string.")

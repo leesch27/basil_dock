@@ -28,6 +28,11 @@ def view_prot(prot):
 if 'result_prot_list' not in st.session_state:
     st.session_state.result_prot_list = []
 
+cur_dir = os.getcwd()
+local = True
+if "mount/src" in cur_dir:
+    local = False
+
 try:
     load_keys("current_dir")
     current_dir = st.session_state.current_dir
@@ -155,35 +160,56 @@ if st.session_state.prot_of_interest != None and st.session_state.prot_of_intere
     pdb_prot_filename = pdb_list.retrieve_pdb_file(st.session_state.prot_of_interest, pdir="data/test_files", file_format="pdb")
     view_prot(st.session_state.prot_of_interest)
 
-# save as PDB/ENT
-if st.button("Download selected receptor as PDB/ENT"):
-    #add garbage collection for test files?
-    pdb_lower = st.session_state.prot_of_interest.lower()
-    file_location_data = os.path.join('data', 'PDB_files', '*.ent')
-    receptors = glob.glob(file_location_data)
-    if f"pdb{pdb_lower}.ent" in receptors:
-        st.write("PDB file already exists in PDB_files folder.")
-    else:
+if "mount/src" in current_dir:
+    if st.button("Prepare download"):
         pdb_list = PDBList()
+        pdb_lower = st.session_state.prot_of_interest.lower()
         pdb_prot_filename = pdb_list.retrieve_pdb_file(st.session_state.prot_of_interest, pdir="data/PDB_files", file_format="pdb")
-        st.write("PDB file saved to data/PDB_files folder.")
+        cif_prot_filename = pdb_list.retrieve_pdb_file(st.session_state.prot_of_interest, pdir="data/PDB_files", file_format="mmCif")
+        with open(pdb_prot_filename, "r") as pdb_file:
+            st.download_button(
+                label="Download selected receptor as PDB/ENT",
+                data=pdb_file.read().encode("utf-8"),
+                file_name=f"{pdb_lower}.ent",
+                on_click="ignore",
+                mime="text/plain",)
+        with open(cif_prot_filename, "r") as cif_file:
+            st.download_button(
+                label="Download selected receptor as CIF",
+                data=cif_file.read().encode("utf-8"),
+                file_name=f"{pdb_lower}.cif",
+                on_click="ignore",
+                mime="text/plain",)
+else:
+    # save as PDB/ENT
+    if st.button("Download selected receptor as PDB/ENT"):
+        #add garbage collection for test files?
+        pdb_lower = st.session_state.prot_of_interest.lower()
+        file_location_data = os.path.join('data', 'PDB_files', '*.ent')
+        receptors = glob.glob(file_location_data)
+        if f"pdb{pdb_lower}.ent" in receptors:
+            st.write("PDB file already exists in PDB_files folder.")
+        else:
+            pdb_list = PDBList()
+            pdb_prot_filename = pdb_list.retrieve_pdb_file(st.session_state.prot_of_interest, pdir="data/PDB_files", file_format="pdb")
+            st.write("PDB file saved to data/PDB_files folder.")
 
-# save as mmCif
-if st.button("Download selected receptor as CIF"):
-    pdb_lower = st.session_state.prot_of_interest.lower()
-    file_location_data = os.path.join('data', 'PDB_files', '*.cif')
-    receptors = glob.glob(file_location_data)
-    if f"{pdb_lower}.cif" in receptors:
-        st.write("CIF file already exists in PDB_files folder.")
-    else:
-        pdb_list = PDBList()
-        pdb_prot_filename = pdb_list.retrieve_pdb_file(st.session_state.prot_of_interest, pdir="data/PDB_files", file_format="mmCif")
-        st.write("CIF file saved to data/PDB_files folder.")
+    # save as mmCif
+    if st.button("Download selected receptor as CIF"):
+        pdb_lower = st.session_state.prot_of_interest.lower()
+        file_location_data = os.path.join('data', 'PDB_files', '*.cif')
+        receptors = glob.glob(file_location_data)
+        if f"{pdb_lower}.cif" in receptors:
+            st.write("CIF file already exists in PDB_files folder.")
+        else:
+            pdb_list = PDBList()
+            pdb_prot_filename = pdb_list.retrieve_pdb_file(st.session_state.prot_of_interest, pdir="data/PDB_files", file_format="mmCif")
+            st.write("CIF file saved to data/PDB_files folder.")
 
-# clean test files
-if st.button("Clean test folder"):
-    testing_data = os.path.join('data', 'test_files', '*')
-    testing_files = glob.glob(testing_data)
-    for file in testing_files:
-        os.remove(file)
-    st.write("Test folder cleaned.")
+    # clean test files
+    if st.button("Clean test folder"):
+        testing_data = os.path.join('data', 'test_files', '*')
+        testing_files = glob.glob(testing_data)
+        for file in testing_files:
+            os.remove(file)
+        st.write("Test folder cleaned.")

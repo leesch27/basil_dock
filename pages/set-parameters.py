@@ -94,13 +94,6 @@ with st.form("enter_docking_parameters"):
                         pqr = subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
                     else:
                         run_pdb2pqr(["--pdb-output", output_file, "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
-                        #pqr = subprocess.run([f"{sys.executable}", "pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
-                        with open(output_file, "r") as out_check:
-                            for line in out_check:
-                                print(line)
-                        with open(pqr_file, "r") as pqr_check:
-                            for line in pqr_check:
-                                print(line)
                     to_pdbqt = mda.Universe(pqr_file)
                     to_pdbqt.atoms.write(f"data/PDBQT_files/{pdb_id}_protein.pdbqt")
 
@@ -174,6 +167,7 @@ with st.form("enter_docking_parameters"):
             st.session_state._filenames = filenames
             st.session_state._filenames_H = filenames_H
             st.session_state._filenames_pdbqt = filenames_pdbqt
+            st.session_state._ligand_smiles_data = ligand_smiles_data
             status.update(label="Seperating and sanitizing of molecules completed!")
         
         dock_method = st.session_state.docking_method
@@ -199,16 +193,15 @@ if not local and "_pdb_id" in st.session_state:
     filenames_H = st.session_state._filenames_H
     filenames_pdbqt = st.session_state._filenames_pdbqt
     pdb_id = st.session_state._pdb_id
+    ligand_smiles_data = st.session_state._ligand_smiles_data
 
     buf_mol2 = BytesIO()
     buf_mol2_H = BytesIO()
     buf_pdbqt = BytesIO()
-    #f"data/PDB_files/{pdb_id}_protein.pdb"
-    #f"data/PDB_files/{pdb_id}_protein_H.pdb"
-    #f"data/PDB_files/{pdb_id}_protein_H.pdbqt"
+    
     pdb_file = open(f"data/PDB_files/{pdb_id}_protein.pdb", "r", encoding="utf-8")
     pdb_H_file = open(f"data/PDB_files/{pdb_id}_protein_H.pdb", "r", encoding="utf-8")
-    #pdbqt_file = open(f"data/PDBQT_files/{pdb_id}_protein.pdbqt", "r", encoding="utf-8")
+    pdbqt_file = open(f"data/PDBQT_files/{pdb_id}_protein.pdbqt", "r", encoding="utf-8")
 
     with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
         for item in filenames:
@@ -225,35 +218,46 @@ if not local and "_pdb_id" in st.session_state:
     st.download_button(
         label="Download Sanitized Receptor (PDB)",
         data=pdb_file.read(),
-        file_name=f"{pdb_id}_protein.pdb",)
+        file_name=f"{pdb_id}_protein.pdb",
+        on_click="ignore",
+        mime="text/plain",)
     st.download_button(
         label="Download Sanitized Receptor (PDB, Protonated)",
         data=pdb_H_file.read(),
-        file_name=f"{pdb_id}_protein_H.pdb",)
-    #st.download_button(
-    #    label="Download Sanitized Receptor (PDBQT)",
-    #    data=pdbqt_file.read(),
-    #    file_name=f"{pdb_id}_protein.pdbqt",)
+        file_name=f"{pdb_id}_protein_H.pdb",
+        on_click="ignore",
+        mime="text/plain",)
+    st.download_button(
+        label="Download Sanitized Receptor (PDBQT)",
+        data=pdbqt_file.read(),
+        file_name=f"{pdb_id}_protein.pdbqt",
+        on_click="ignore",
+        mime="text/plain",)
     st.download_button(
         label="Download Ligand Files (MOL2)",
         data=buf_mol2.getvalue(),
-        file_name=f"{pdb_id}_ligands_mol2.zip",)
+        file_name=f"{pdb_id}_ligands_mol2.zip",
+        on_click="ignore",)
     st.download_button(
         label="Download Ligand Files (MOL2, Protonated)",
         data=buf_mol2_H.getvalue(),
-        file_name=f"{pdb_id}_ligands_H.mol2.zip",)
+        file_name=f"{pdb_id}_ligands_H.mol2.zip",
+        on_click="ignore",)
     st.download_button(
         label="Download Ligand Files (PDBQT)",
         data=buf_pdbqt.getvalue(),
-        file_name=f"{pdb_id}_ligands_pdbqt.zip",)
+        file_name=f"{pdb_id}_ligands_pdbqt.zip",
+        on_click="ignore",)
     st.download_button(
         label="Download Ligand SMILES Information (CSV)",
         data=ligand_smiles_data.to_csv().encode("utf-8"),
-        file_name=f"ligand_smiles_data_id_{pdb_id}_{str(len(ligs))}.csv",)
+        file_name=f"ligand_smiles_data_id_{pdb_id}_{str(len(ligs))}.csv",
+        on_click="ignore",
+        mime="text/csv",)
     if st.button("Proceed to Docking Pages"):
         pdb_file.close()
         pdb_H_file.close()
-        #pdbqt_file.close()
+        pdbqt_file.close()
         if dock_method == "Blind Docking":
             st.switch_page("pages/blind-docking.py")
         else:

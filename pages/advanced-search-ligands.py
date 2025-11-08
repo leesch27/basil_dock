@@ -7,12 +7,21 @@ import py3Dmol
 import requests
 from openbabel import pybel
 from rcsbapi.search import AttributeQuery, Attr, TextQuery, ChemSimilarityQuery
+from rdkit import Chem
+from rdkit.Chem import AllChem, rdCoordGen
 
 sys.path.insert(1, 'utilities/')
 from ligandsplitter.basefunctions import create_folders
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
+
+def molecule_to_3d(molecule):
+    mol = Chem.Mol(molecule)
+    mol = AllChem.AddHs(mol, addCoords=True)
+    AllChem.EmbedMolecule(mol)
+    AllChem.MMFFOptimizeMolecule(mol)
+    return mol
 
 def view_ligands(ligand):
     lig = f"{current_dir}/data/test_files/{ligand}_ligand.sdf"
@@ -58,6 +67,11 @@ chem_types = ("No Selection","D-beta-peptide, C-gamma linking",
 result_lig_list = []
 if 'result_lig_list' not in st.session_state:
     st.session_state.result_lig_list = []
+
+cur_dir = os.getcwd()
+local = True
+if "mount/src" in cur_dir:
+    local = False
 
 try:
     load_keys("current_dir")
@@ -139,17 +153,30 @@ if st.session_state.lig_of_interest != None and st.session_state.lig_of_interest
         out_mol2.write(pdb_mol2)
     view_ligands(ligand)
 
-# save as MOL2
-if st.button("Download selected ligand as MOL2"):
-    #add garbage collection for test files?
-    pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
-    out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
-    out_mol2.write(pdb_mol2)
+if "mount/src" in current_dir:
+    if st.button("Prepare download"):
+        pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
+        out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
+        out_mol2.write(pdb_mol2)
+        with open(out_mol2, "r") as pdb_file:
+            st.download_button(
+                label="Download selected receptor as PDB/ENT",
+                data=pdb_file.read().encode("utf-8"),
+                file_name=f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2",
+                on_click="ignore",
+                mime = "application/vnd.sybyl.mol2")
+else:
+    # save as MOL2
+    if st.button("Download selected ligand as MOL2"):
+        #add garbage collection for test files?
+        pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
+        out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
+        out_mol2.write(pdb_mol2)
 
-# clean test files
-if st.button("Clean test folder"):
-    testing_data = os.path.join('data', 'test_files', '*')
-    testing_files = glob.glob(testing_data)
-    for file in testing_files:
-        os.remove(file)
-    st.write("Test folder cleaned.")
+    # clean test files
+    if st.button("Clean test folder"):
+        testing_data = os.path.join('data', 'test_files', '*')
+        testing_files = glob.glob(testing_data)
+        for file in testing_files:
+            os.remove(file)
+        st.write("Test folder cleaned.")
