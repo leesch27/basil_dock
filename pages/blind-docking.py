@@ -36,6 +36,9 @@ local = True
 if "mount/src" in cur_dir:
     local = False
 
+home = str(os.path.expanduser("~"))
+print(home)
+
 def download_button(object_to_download, download_filename):
     """
     Generates a link to download the given object_to_download.
@@ -180,15 +183,11 @@ st.write("Review and set parameters for blind docking")
 with st.status("Running fpocket on the protein, searching for binding pockets...") as status:
     # run fpocket to find potential binding pockets on protein
     try:
-        #test test
-        with open(f"data/PDB_files/{pdb_id}_protein.pdb", "r") as in_file:
-            for line in in_file:
-                print(line, end="")
         with open(f"data/pocket_descriptors_{pdb_id}.csv", "w+") as out_file:
             if local:
                 fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             else:
-                fpocket = subprocess.run(["bash", "fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
+                fpocket = subprocess.run(["bash", f"{home}/fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             status.update(label="fpocket run completed!")
     except subprocess.CalledProcessError as fpocket:
         print(fpocket.stderr, end="")
