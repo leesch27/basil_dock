@@ -184,7 +184,7 @@ with st.status("Running fpocket on the protein, searching for binding pockets...
             if local:
                 fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             else:
-                fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
+                fpocket = subprocess.run(["bash", "fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             status.update(label="fpocket run completed!")
     except subprocess.CalledProcessError as fpocket:
         print(fpocket.stderr, end="")
