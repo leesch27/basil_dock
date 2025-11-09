@@ -249,11 +249,11 @@ if not local and "_pdb_id" in st.session_state:
         file_name=f"ligand_smiles_data_id_{st.session_state._pdb_id}_{str(len(st.session_state._ligs))}.csv",
         on_click="ignore",
         mime="text/csv",)
-    if st.button("Proceed to Docking Pages"):
+    if st.button("Proceed to Docking Pages", type="primary"):
         pdb_file.close()
         pdb_H_file.close()
         pdbqt_file.close()
-        if dock_method == "Blind Docking":
+        if st.session_state.dock_method == "Blind Docking":
             st.switch_page("pages/blind-docking.py")
         else:
             st.switch_page("pages/site-specific-docking.py")
