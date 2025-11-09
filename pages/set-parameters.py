@@ -253,7 +253,7 @@ if not local and "_pdb_id" in st.session_state:
         pdb_file.close()
         pdb_H_file.close()
         pdbqt_file.close()
-        if st.session_state.dock_method == "Blind Docking":
+        if st.session_state.docking_method == "Blind Docking":
             st.switch_page("pages/blind-docking.py")
         else:
             st.switch_page("pages/site-specific-docking.py")
