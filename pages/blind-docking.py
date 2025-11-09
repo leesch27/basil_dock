@@ -1,12 +1,15 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import sys, os
+from io import StringIO, BytesIO
 import numpy as np
 import pandas as pd
 import numbers
 import re
 import glob
 import subprocess
+import zipfile
+import base64
 
 from Bio.PDB import PDBList
 import MDAnalysis as mda 
@@ -27,6 +30,49 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 #sys.path.insert(1, '../utilities/')
 from utilities.utils import pdbqt_to_sdf
 from utilities.basil_utils import get_prot_pockets_data, get_ifps, get_scores, save_dataframe, get_largest_array_column, expand_df, fill_df
+
+cur_dir = os.getcwd()
+local = True
+if "mount/src" in cur_dir:
+    local = False
+
+def download_button(object_to_download, download_filename):
+    """
+    Generates a link to download the given object_to_download.
+    Params:
+    ------
+    object_to_download:  The object to be downloaded.
+    download_filename (str): filename and extension of file. e.g. mydata.csv,
+    Returns:
+    -------
+    (str): the anchor tag to download object_to_download
+    """
+    try:
+        # some strings <-> bytes conversions necessary here
+        b64 = base64.b64encode(object_to_download.encode()).decode()
+
+    except AttributeError as e:
+        b64 = base64.b64encode(object_to_download).decode()
+
+    dl_link = f"""
+    <html>
+    <head>
+    <title>Start Auto Download file</title>
+    <script src="http://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script>
+    $('<a href="data:text/plain;base64,{b64}" download="{download_filename}">')[0].click()
+    </script>
+    </head>
+    </html>
+    """
+    return dl_link
+
+
+def download_files():
+    components.html(
+        download_button("df", st.session_state.filename),
+        height=0,
+    )
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
@@ -135,7 +181,10 @@ with st.status("Running fpocket on the protein, searching for binding pockets...
     # run fpocket to find potential binding pockets on protein
     try:
         with open(f"data/pocket_descriptors_{pdb_id}.csv", "w+") as out_file:
-            fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
+            if local:
+                fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
+            else:
+                fpocket = subprocess.run([f"{sys.executable}", "fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             status.update(label="fpocket run completed!")
     except subprocess.CalledProcessError as fpocket:
         print(fpocket.stderr, end="")
@@ -274,7 +323,46 @@ if st.button("Dock!"):
         st.write(f"Filling expanded dataframe...")
         fill_df(df2, all_ifps, all_ligand_plf, largest_array_column)
         save_dataframe(df2, engine_name, pdb_id, ligs, csv_name = f"{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}_extended")
-        status_results.update(label="Results saved! To analyze docking results, click the 'Analyze docking results' link below.")
+        if local:
+            status_results.update(label="Results saved! To analyze docking results, click the 'Analyze docking results' link below.")
+        else:
+            status_results.update(label="Results saved! To analyze docking results, download the results files and click the 'Analyze docking results' link below.")
+            # get ligand files for download
+            buf_mol2 = BytesIO()
+
+            with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
+                pockets = st.session_state.pocket_list
+                for pocket in pockets.index:
+                    for ligand in ligs:
+                        if engine_name == "vina":
+                            filename = f"data/vina_out_2/{ligand}_pocket_{pocket}_vina_out_2.sdf"
+                        else:
+                            filename = f"data/smina_out_2/{ligand}_pocket_{pocket}_smina_out_2.sdf"
+                        lig_mol_zip.write(filename, os.path.basename(filename))
+            
+            st.download_button(
+                label="Download Ligand Files (SDF)",
+                data=buf_mol2.getvalue(),
+                file_name=f"{pdb_id}_docked_ligands_sdf.zip",
+                on_click="ignore",)
+            # download docking results files
+            with open(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}.csv', "rb") as file:
+                st.download_button(
+                    label="Download CSV",
+                    data=file,
+                    file_name=f"{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}.csv",
+                    mime="text/csv",
+                    on_click="ignore",
+                )   
+            with open(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}_extended.csv', "rb") as file:
+                st.download_button(
+                    label="Download Extended CSV",
+                    data=file,
+                    file_name=f"{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}_extended.csv",
+                    mime="text/csv",
+                    on_click="ignore",
+                )   
+
 
 st.page_link("pages/docking-analysis.py", label="Analyze docking results", icon="📊")
 st.page_link("pages/set-parameters.py", label="Return to parameter selection", icon="🏠")

@@ -1,6 +1,7 @@
 biopandas==0.5.1
 biopython==1.84
 ligandsplitter==0.0.3
+jupyter
 matplotlib
 mdanalysis==2.7.0
 numpy==1.26.4

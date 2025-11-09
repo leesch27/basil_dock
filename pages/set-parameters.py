@@ -234,11 +234,6 @@ if not local and "_pdb_id" in st.session_state:
         on_click="ignore",
         mime="text/plain",)
     st.download_button(
-        label="Download Ligand Files (MOL2)",
-        data=buf_mol2.getvalue(),
-        file_name=f"{pdb_id}_ligands_mol2.zip",
-        on_click="ignore",)
-    st.download_button(
         label="Download Ligand Files (MOL2, Protonated)",
         data=buf_mol2_H.getvalue(),
         file_name=f"{pdb_id}_ligands_H.mol2.zip",
@@ -251,7 +246,7 @@ if not local and "_pdb_id" in st.session_state:
     st.download_button(
         label="Download Ligand SMILES Information (CSV)",
         data=ligand_smiles_data.to_csv().encode("utf-8"),
-        file_name=f"ligand_smiles_data_id_{pdb_id}_{str(len(ligs))}.csv",
+        file_name=f"ligand_smiles_data_id_{st.session_state._pdb_id}_{str(len(st.session_state._ligs))}.csv",
         on_click="ignore",
         mime="text/csv",)
     if st.button("Proceed to Docking Pages"):
