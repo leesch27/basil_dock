@@ -36,9 +36,6 @@ local = True
 if "mount/src" in cur_dir:
     local = False
 
-home = str(os.path.expanduser("~"))
-print(home)
-
 def download_button(object_to_download, download_filename):
     """
     Generates a link to download the given object_to_download.
@@ -187,7 +184,8 @@ with st.status("Running fpocket on the protein, searching for binding pockets...
             if local:
                 fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             else:
-                fpocket = subprocess.run(["bash", f"{home}/fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
+                #fpocket = subprocess.run(["bash", f"{home}/fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
+                fpocket = subprocess.run(["bash", f"/home/adminuser/.conda/bin/fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             status.update(label="fpocket run completed!")
     except subprocess.CalledProcessError as fpocket:
         print(fpocket.stderr, end="")
