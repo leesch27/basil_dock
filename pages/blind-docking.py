@@ -184,7 +184,7 @@ with st.status("Running fpocket on the protein, searching for binding pockets...
             if local:
                 fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             else:
-                fpocket = subprocess.run([f"{sys.executable}", "fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
+                fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             status.update(label="fpocket run completed!")
     except subprocess.CalledProcessError as fpocket:
         print(fpocket.stderr, end="")
@@ -327,41 +327,43 @@ if st.button("Dock!"):
             status_results.update(label="Results saved! To analyze docking results, click the 'Analyze docking results' link below.")
         else:
             status_results.update(label="Results saved! To analyze docking results, download the results files and click the 'Analyze docking results' link below.")
-            # get ligand files for download
-            buf_mol2 = BytesIO()
-
-            with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
-                pockets = st.session_state.pocket_list
-                for pocket in pockets.index:
-                    for ligand in ligs:
-                        if engine_name == "vina":
-                            filename = f"data/vina_out_2/{ligand}_pocket_{pocket}_vina_out_2.sdf"
-                        else:
-                            filename = f"data/smina_out_2/{ligand}_pocket_{pocket}_smina_out_2.sdf"
-                        lig_mol_zip.write(filename, os.path.basename(filename))
             
+    if local == False:
+        # get ligand files for download
+        buf_mol2 = BytesIO()
+
+        with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
+            pockets = st.session_state.pocket_list
+            for pocket in pockets.index:
+                for ligand in ligs:
+                    if engine_name == "vina":
+                        filename = f"data/vina_out_2/{ligand}_pocket_{pocket}_vina_out_2.sdf"
+                    else:
+                        filename = f"data/smina_out_2/{ligand}_pocket_{pocket}_smina_out_2.sdf"
+                    lig_mol_zip.write(filename, os.path.basename(filename))
+            
+        st.download_button(
+            label="Download Ligand Files (SDF)",
+            data=buf_mol2.getvalue(),
+            file_name=f"{pdb_id}_docked_ligands_sdf.zip",
+            on_click="ignore",)
+        # download docking results files
+        with open(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}.csv', "rb") as file:
             st.download_button(
-                label="Download Ligand Files (SDF)",
-                data=buf_mol2.getvalue(),
-                file_name=f"{pdb_id}_docked_ligands_sdf.zip",
-                on_click="ignore",)
-            # download docking results files
-            with open(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}.csv', "rb") as file:
-                st.download_button(
-                    label="Download CSV",
-                    data=file,
-                    file_name=f"{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}.csv",
-                    mime="text/csv",
-                    on_click="ignore",
-                )   
-            with open(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}_extended.csv', "rb") as file:
-                st.download_button(
-                    label="Download Extended CSV",
-                    data=file,
-                    file_name=f"{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}_extended.csv",
-                    mime="text/csv",
-                    on_click="ignore",
-                )   
+                label="Download CSV",
+                data=file,
+                file_name=f"{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}.csv",
+                mime="text/csv",
+                on_click="ignore",
+            )   
+        with open(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}_extended.csv', "rb") as file:
+            st.download_button(
+                label="Download Extended CSV",
+                data=file,
+                file_name=f"{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}_extended.csv",
+                mime="text/csv",
+                on_click="ignore",
+            )   
 
 
 st.page_link("pages/docking-analysis.py", label="Analyze docking results", icon="📊")
