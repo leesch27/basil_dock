@@ -163,7 +163,9 @@ with st.form("enter_docking_parameters"):
             n = 0
             filenames_pdbqt = []
             for index, i in enumerate(filenames):
-                ligand_extension = orig_filenames[index].split(".")[-1]
+                temp_name = orig_filenames[index]
+                print(temp_name)
+                ligand_extension = temp_name.split(".")[-1]
                 # skip conversion if ligand is already in pdbqt format
                 if ligand_extension == "pdbqt":
                     filenames_pdbqt.append(f"data/PDBQT_files/{ligs[n]}.pdbqt")

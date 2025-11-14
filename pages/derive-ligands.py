@@ -92,88 +92,88 @@ if st.session_state.deriv_of_interest != None and st.session_state.deriv_of_inte
         mol3d = molecule_to_3d(mol_of_interest)
         view_ligand(mol3d)
 
-if not local:
-    #single derivative
-    smiles = list(st.session_state.result_deriv_type_list.keys())[list(st.session_state.result_deriv_type_list.values()).index(st.session_state.deriv_of_interest)]
-    index = st.session_state.result_deriv_smiles_list.index(smiles)
-    selected_mol = [st.session_state.result_deriv_mol_list[index]]
-    selected_smile = [st.session_state.result_deriv_smiles_list[index]]
-    derivs_single, fxnal_groups_derivs_single = create_derivative_files(selected_mol, selected_smile, st.session_state.result_deriv_type_list)
-    for value in derivs_single:
-        filename = f"data/MOL2_files/{value}.mol2"
-        filename_pdbqt = f"data/PDBQT_files/{value}.pdbqt"
+        if not local:
+            #single derivative
+            smiles = list(st.session_state.result_deriv_type_list.keys())[list(st.session_state.result_deriv_type_list.values()).index(st.session_state.deriv_of_interest)]
+            index = st.session_state.result_deriv_smiles_list.index(smiles)
+            selected_mol = [st.session_state.result_deriv_mol_list[index]]
+            selected_smile = [st.session_state.result_deriv_smiles_list[index]]
+            derivs_single, fxnal_groups_derivs_single = create_derivative_files(selected_mol, selected_smile, st.session_state.result_deriv_type_list)
+            for value in derivs_single:
+                filename = f"data/MOL2_files/{value}.mol2"
+                filename_pdbqt = f"data/PDBQT_files/{value}.pdbqt"
     
-    #all derivatives
-    derivs_all, fxnal_groups_derivs_all = create_derivative_files(st.session_state.result_deriv_mol_list, st.session_state.result_deriv_smiles_list, st.session_state.result_deriv_type_list)
-    filenames = []
-    filenames_pdbqt = []
-    for value in derivs_all:
-        filenames.append(f"data/MOL2_files/{value}.mol2")
-        filenames_pdbqt.append(f"data/PDBQT_files/{value}.pdbqt")
+            #all derivatives
+            derivs_all, fxnal_groups_derivs_all = create_derivative_files(st.session_state.result_deriv_mol_list, st.session_state.result_deriv_smiles_list, st.session_state.result_deriv_type_list)
+            filenames = []
+            filenames_pdbqt = []
+            for value in derivs_all:
+                filenames.append(f"data/MOL2_files/{value}.mol2")
+                filenames_pdbqt.append(f"data/PDBQT_files/{value}.pdbqt")
 
-    buf_mol2 = BytesIO()
-    buf_pdbqt = BytesIO()
+            buf_mol2 = BytesIO()
+            buf_pdbqt = BytesIO()
 
-    with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
-        for filename_temp in filenames:
-            lig_mol_zip.write(filename_temp, os.path.basename(filename_temp))
+            with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
+                for filename_temp in filenames:
+                    lig_mol_zip.write(filename_temp, os.path.basename(filename_temp))
 
-    with zipfile.ZipFile(buf_pdbqt, "x") as lig_mol_zip:
-        for filename_temp in filenames_pdbqt:
-            lig_mol_zip.write(filename_temp, os.path.basename(filename_temp))
+            with zipfile.ZipFile(buf_pdbqt, "x") as lig_mol_zip:
+                for filename_temp in filenames_pdbqt:
+                    lig_mol_zip.write(filename_temp, os.path.basename(filename_temp))
 
-    with open(filename, "r") as pdb_file:
-        st.download_button(
-            label="Download Selected Derivative Ligand as MOL2",
-            data=pdb_file.read().encode("utf-8"),
-            file_name=filename,
-            on_click="ignore",
-            mime = "application/vnd.sybyl.mol2")
+            with open(filename, "r") as pdb_file:
+                st.download_button(
+                    label="Download Selected Derivative Ligand as MOL2",
+                    data=pdb_file.read().encode("utf-8"),
+                    file_name=filename,
+                    on_click="ignore",
+                    mime = "application/vnd.sybyl.mol2")
 
-    with open(filename_pdbqt, "r") as pdbqt_file:
-        st.download_button(
-            label="Download Selected Derivative Ligand as PDBQT",
-            data=pdbqt_file.read().encode("utf-8"),
-            file_name=filename_pdbqt,
-            on_click="ignore",
-            mime = "text/plain")
-    
-    st.download_button(
-        label="Download Ligand Files (MOL2) for All Derivatives as ZIP",
-        data=buf_mol2.getvalue(),
-        file_name=f"{st.session_state.canon_ligand_name}_deriv_ligands_MOL2.zip",
-        on_click="ignore",)
-    
-    st.download_button(
-        label="Download Ligand Files (PDBQT) for All Derivatives as ZIP",
-        data=buf_pdbqt.getvalue(),
-        file_name=f"{st.session_state.canon_ligand_name}_deriv_ligands_PDBQT.zip",
-        on_click="ignore",)
-else:
-    if st.button("Create Files for Selected Derivative of Ligand"):
-        smiles = list(st.session_state.result_deriv_type_list.keys())[list(st.session_state.result_deriv_type_list.values()).index(st.session_state.deriv_of_interest)]
-        index = st.session_state.result_deriv_smiles_list.index(smiles)
-        selected_mol = [st.session_state.result_deriv_mol_list[index]]
-        selected_smile = [st.session_state.result_deriv_smiles_list[index]]
-        derivs, fxnal_groups_derivs = create_derivative_files(selected_mol, selected_smile, st.session_state.result_deriv_type_list)
-        for value in derivs:
-            filename = f"data/MOL2_files/{value}.mol2"
-            filename_H = f"data/MOL2_files/{value}_H.mol2"
-            filename_pdbqt = f"data/PDBQT_files/{value}.pdbqt"
-        st.write(f"Files created for derivative: {st.session_state.deriv_of_interest}")
-        st.write(f"MOL2 file: {filename}")
-        st.write(f"Hydrogenated MOL2 file: {filename_H}")
-        st.write(f"PDBQT file: {filename_pdbqt}")
+            with open(filename_pdbqt, "r") as pdbqt_file:
+                st.download_button(
+                    label="Download Selected Derivative Ligand as PDBQT",
+                    data=pdbqt_file.read().encode("utf-8"),
+                    file_name=filename_pdbqt,
+                    on_click="ignore",
+                    mime = "text/plain")
 
-    if st.button("Create Files for All Derivatives of Ligand"):
-        derivs, fxnal_groups_derivs = create_derivative_files(st.session_state.result_deriv_mol_list, st.session_state.result_deriv_smiles_list, st.session_state.result_deriv_type_list)
-        filenames = []
-        filenames_H = []
-        filenames_pdbqt = []
-        for value in derivs:
-            filenames.append(f"data/MOL2_files/{value}.mol2")
-            filenames_H.append(f"data/MOL2_files/{value}_H.mol2")
-            filenames_pdbqt.append(f"data/PDBQT_files/{value}.pdbqt")
-        st.write(f"Files created for all derivatives.")
-        df = pd.DataFrame({"MOL2 files": filenames, "Hydrogenated MOL2 files": filenames_H, "PDBQT files": filenames_pdbqt})
-        st.dataframe(df)
+            st.download_button(
+                label="Download Ligand Files (MOL2) for All Derivatives as ZIP",
+                data=buf_mol2.getvalue(),
+                file_name=f"{st.session_state.canon_ligand_name}_deriv_ligands_MOL2.zip",
+                on_click="ignore",)
+
+            st.download_button(
+                label="Download Ligand Files (PDBQT) for All Derivatives as ZIP",
+                data=buf_pdbqt.getvalue(),
+                file_name=f"{st.session_state.canon_ligand_name}_deriv_ligands_PDBQT.zip",
+                on_click="ignore",)
+        else:
+            if st.button("Create Files for Selected Derivative of Ligand"):
+                smiles = list(st.session_state.result_deriv_type_list.keys())[list(st.session_state.result_deriv_type_list.values()).index(st.session_state.deriv_of_interest)]
+                index = st.session_state.result_deriv_smiles_list.index(smiles)
+                selected_mol = [st.session_state.result_deriv_mol_list[index]]
+                selected_smile = [st.session_state.result_deriv_smiles_list[index]]
+                derivs, fxnal_groups_derivs = create_derivative_files(selected_mol, selected_smile, st.session_state.result_deriv_type_list)
+                for value in derivs:
+                    filename = f"data/MOL2_files/{value}.mol2"
+                    filename_H = f"data/MOL2_files/{value}_H.mol2"
+                    filename_pdbqt = f"data/PDBQT_files/{value}.pdbqt"
+                st.write(f"Files created for derivative: {st.session_state.deriv_of_interest}")
+                st.write(f"MOL2 file: {filename}")
+                st.write(f"Hydrogenated MOL2 file: {filename_H}")
+                st.write(f"PDBQT file: {filename_pdbqt}")
+
+            if st.button("Create Files for All Derivatives of Ligand"):
+                derivs, fxnal_groups_derivs = create_derivative_files(st.session_state.result_deriv_mol_list, st.session_state.result_deriv_smiles_list, st.session_state.result_deriv_type_list)
+                filenames = []
+                filenames_H = []
+                filenames_pdbqt = []
+                for value in derivs:
+                    filenames.append(f"data/MOL2_files/{value}.mol2")
+                    filenames_H.append(f"data/MOL2_files/{value}_H.mol2")
+                    filenames_pdbqt.append(f"data/PDBQT_files/{value}.pdbqt")
+                st.write(f"Files created for all derivatives.")
+                df = pd.DataFrame({"MOL2 files": filenames, "Hydrogenated MOL2 files": filenames_H, "PDBQT files": filenames_pdbqt})
+                st.dataframe(df)
