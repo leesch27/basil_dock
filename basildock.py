@@ -1,15 +1,20 @@
 import streamlit as st
-import streamlit.components.v1 as components
-from io import StringIO
 import sys, os
 import numpy as np
 import pandas as pd
 import numbers
-import re
-import glob
-import subprocess
 
-# change formatting of sidebar, remove site specific page. only want it accessible if option is selected in form
+def save_keys(key):
+    st.session_state[key] = st.session_state["_" + key]
+
+cur_dir = os.getcwd()
+local = True
+if "mount/src" in cur_dir:
+    local = False
+
+st.session_state['_local'] = local
+save_keys("local")
+
 pages = {
     "Set parameters to be used for docking": [
         st.Page("pages/set-parameters.py", title="Parameters")
@@ -26,6 +31,10 @@ pages = {
     ],
     "Get receptors to use in docking": [
         st.Page("pages/advanced-search-proteins.py", title="Search for receptors using RCSB PDB Advanced Search")
+    ],
+    "Resources": [
+        st.Page("pages/documentation.py", title="basil_dock Documentation"),
+        st.Page("pages/docking-background.py", title="Molecular Docking Primer")
     ]
 }
 

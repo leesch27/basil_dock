@@ -22,18 +22,21 @@ def view_ligands(ligand):
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)
 
-cur_dir = os.getcwd()
-local = True
-if "mount/src" in cur_dir:
-    local = False
+#cur_dir = os.getcwd()
+#local = True
+#if "mount/src" in cur_dir:
+#    local = False
+
+load_keys("local")
+local = st.session_state._local
 
 try:
     load_keys("current_dir")
-    current_dir = st.session_state.current_dir
+    current_dir = st.session_state._current_dir
 except:
     current_dir = create_folders()
-    st.session_state.current_dir = current_dir
-
+    st.session_state._current_dir = current_dir
+    
 st.title("Create Ligands from SMILES Strings")
 row1 = st.columns([1,1])
 selected_lig = row1[0].text_input(label="Ligand Name", placeholder='Type Ligand Name Here', key="lig_name")
@@ -53,9 +56,15 @@ if st.button("Generate Ligand from SMILES"):
             out.close()
             st.success(f'Ligand {st.session_state.lig_name} created successfully!')
             view_ligands(st.session_state.lig_name)
+            if local == False:
+                with open(out, "r") as pdb_file:
+                    st.download_button(
+                        label="Download selected ligand as MOL2",
+                        data=pdb_file.read().encode("utf-8"),
+                        file_name=f"data/MOL2_files/{st.session_state.lig_name}.mol2",
+                        on_click="ignore",
+                        mime = "application/vnd.sybyl.mol2")
         elif lig_test is None:
             st.error("Invalid SMILES string.")
-    if local == False:
-        pass
     else:
         st.error("Please provide both a ligand name and a SMILES string.")

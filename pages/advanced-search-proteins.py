@@ -28,17 +28,20 @@ def view_prot(prot):
 if 'result_prot_list' not in st.session_state:
     st.session_state.result_prot_list = []
 
-cur_dir = os.getcwd()
-local = True
-if "mount/src" in cur_dir:
-    local = False
+#cur_dir = os.getcwd()
+#local = True
+#if "mount/src" in cur_dir:
+#    local = False
+
+load_keys("local")
+local = st.session_state._local
 
 try:
     load_keys("current_dir")
-    current_dir = st.session_state.current_dir
+    current_dir = st.session_state._current_dir
 except:
     current_dir = create_folders()
-    st.session_state.current_dir = current_dir
+    st.session_state._current_dir = current_dir
 
 comp_operators = ["==", ">", ">=", "<", "<="]
 

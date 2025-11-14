@@ -9,7 +9,6 @@ import re
 import glob
 import subprocess
 import zipfile
-import base64
 
 from Bio.PDB import PDBList
 import MDAnalysis as mda 
@@ -30,49 +29,6 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 #sys.path.insert(1, '../utilities/')
 from utilities.utils import pdbqt_to_sdf
 from utilities.basil_utils import get_prot_pockets_data, get_ifps, get_scores, save_dataframe, get_largest_array_column, expand_df, fill_df
-
-cur_dir = os.getcwd()
-local = True
-if "mount/src" in cur_dir:
-    local = False
-
-def download_button(object_to_download, download_filename):
-    """
-    Generates a link to download the given object_to_download.
-    Params:
-    ------
-    object_to_download:  The object to be downloaded.
-    download_filename (str): filename and extension of file. e.g. mydata.csv,
-    Returns:
-    -------
-    (str): the anchor tag to download object_to_download
-    """
-    try:
-        # some strings <-> bytes conversions necessary here
-        b64 = base64.b64encode(object_to_download.encode()).decode()
-
-    except AttributeError as e:
-        b64 = base64.b64encode(object_to_download).decode()
-
-    dl_link = f"""
-    <html>
-    <head>
-    <title>Start Auto Download file</title>
-    <script src="http://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script>
-    $('<a href="data:text/plain;base64,{b64}" download="{download_filename}">')[0].click()
-    </script>
-    </head>
-    </html>
-    """
-    return dl_link
-
-
-def download_files():
-    components.html(
-        download_button("df", st.session_state.filename),
-        height=0,
-    )
 
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
@@ -140,7 +96,10 @@ def dock_smina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose
             pocket_size_cavity = pocket_size[cav_num]
             # run smina docking
             try:
-                smina = subprocess.run(["smina", "-r", rec, "-l", lig, "-o", outfile, "--center_x", str(pocket_center_cavity[0]), "--center_y", str(pocket_center_cavity[1]), "--center_z", str(pocket_center_cavity[2]), "--size_x", str(pocket_size_cavity[0]), "--size_y", str(pocket_size_cavity[1]), "--size_z", str(pocket_size_cavity[2]), "--exhaustiveness", str(exhaust), "--num_modes", str(pose)], text=True)
+                if local:
+                    smina = subprocess.run(["smina", "-r", rec, "-l", lig, "-o", outfile, "--center_x", str(pocket_center_cavity[0]), "--center_y", str(pocket_center_cavity[1]), "--center_z", str(pocket_center_cavity[2]), "--size_x", str(pocket_size_cavity[0]), "--size_y", str(pocket_size_cavity[1]), "--size_z", str(pocket_size_cavity[2]), "--exhaustiveness", str(exhaust), "--num_modes", str(pose)], text=True)
+                else:
+                    smina = subprocess.run([f"/home/adminuser/.conda/bin/smina", "smina", "-r", rec, "-l", lig, "-o", outfile, "--center_x", str(pocket_center_cavity[0]), "--center_y", str(pocket_center_cavity[1]), "--center_z", str(pocket_center_cavity[2]), "--size_x", str(pocket_size_cavity[0]), "--size_y", str(pocket_size_cavity[1]), "--size_z", str(pocket_size_cavity[2]), "--exhaustiveness", str(exhaust), "--num_modes", str(pose)], text=True)
                 mols = []
                 # Rewrite sdf output files to add 3D tag
                 with Chem.SDMolSupplier(f'data/smina_out/{ligand}_pocket_{id}_smina_out.sdf') as suppl:
@@ -165,15 +124,18 @@ load_keys("filenames_H")
 load_keys("filenames_pdbqt")
 load_keys("pdb_id")
 
-current_dir = st.session_state.current_dir
-pdb_id = st.session_state.pdb_id
-ligs = st.session_state.ligs
-filenames = st.session_state.filenames
-filenames_H = st.session_state.filenames_H
-filenames_pdbqt = st.session_state.filenames_pdbqt
-docking_engine = st.session_state.docking_engine
-num_poses = st.session_state.poses_val
-exhaustiveness = st.session_state.exhaust_val
+load_keys("local")
+local = st.session_state._local
+
+current_dir = st.session_state._current_dir
+pdb_id = st.session_state._pdb_id
+ligs = st.session_state._ligs
+filenames = st.session_state._filenames
+filenames_H = st.session_state._filenames_H
+filenames_pdbqt = st.session_state._filenames_pdbqt
+docking_engine = st.session_state._docking_engine
+num_poses = st.session_state._poses_val
+exhaustiveness = st.session_state._exhaust_val
 
 st.title("Blind Docking Parameters")
 st.write("Review and set parameters for blind docking")
@@ -185,7 +147,6 @@ with st.status("Running fpocket on the protein, searching for binding pockets...
                 fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             else:
                 fpocket = subprocess.run([f"/home/adminuser/.conda/bin/fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
-                #fpocket = subprocess.run(["bash", f"/home/adminuser/.conda/bin/fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
             status.update(label="fpocket run completed!")
     except subprocess.CalledProcessError as fpocket:
         print(fpocket.stderr, end="")

@@ -26,12 +26,14 @@ def save_keys(key):
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
 
-cur_dir = os.getcwd()
-local = True
-if "mount/src" in cur_dir:
-    local = False
+#cur_dir = os.getcwd()
+#local = True
+#if "mount/src" in cur_dir:
+#    local = False
 
-print(f"Local mode: {local}")
+load_keys("local")
+local = st.session_state._local
+
 with st.form("enter_docking_parameters"):
     header = st.columns([1,1])
     header[0].subheader("basil dock Settings")
@@ -43,7 +45,7 @@ with st.form("enter_docking_parameters"):
     
     row2 = st.columns([1,1])
     docking_method = row2[0].selectbox("Select Docking Method to Use", ["Blind Docking", "Site-Specific Docking"], key = "docking_method")
-    ligand_retrieval = row2[1].file_uploader("Upload Ligand/s To Use", accept_multiple_files= True, type=["mol2", "sdf"], key = "_ligand_upload")
+    ligand_retrieval = row2[1].file_uploader("Upload Ligand/s To Use", accept_multiple_files= True, type=["mol2", "sdf", "pdbqt"], key = "_ligand_upload")
 
     row3 = st.columns([1,1])
     exhaustiveness = row3[0].slider("Select Exhaustiveness Value", 1, 16, 5, key = "_exhaust_val")
@@ -56,6 +58,7 @@ with st.form("enter_docking_parameters"):
     
     if submitted:
         ligs = []
+        orig_filenames = []
         filenames = []
         protein = st.session_state._protein_upload
         ligands = st.session_state._ligand_upload
@@ -112,15 +115,28 @@ with st.form("enter_docking_parameters"):
             st.write("Writing ligand files...")
             for uploaded_file in ligands:
                 ligand_name = uploaded_file.name
+                orig_filenames.append(ligand_name)
                 ligand_id_proto = ligand_name.split(".")[:-1]
                 ligand_id = "".join(str(x) for x in ligand_id_proto)
                 ligand_extension = ligand_name.split(".")[-1]
                 stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
                 bytes_data = stringio.read()
-                with open(f"data/MOL2_files/{ligand_name}", "w+") as datafile:
-                    datafile.write(bytes_data)
+                if ligand_extension == "pdbqt":
+                    with open(f"data/PDBQT_files/{ligand_name}", "w+") as datafile:
+                        datafile.write(bytes_data)
+                else:
+                    with open(f"data/MOL2_files/{ligand_name}", "w+") as datafile:
+                        datafile.write(bytes_data)
+                
+                # convert to mol2 if necessary
                 if ligand_extension == "sdf":
                     pdb_mol2 = [m for m in pybel.readfile(filename = f"data/MOL2_files/{ligand_name}", format='sdf')][0]
+                    out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{ligand_id}.mol2", overwrite = True, format='mol2')
+                    out_mol2.write(pdb_mol2)
+                    ligs.append(ligand_id)
+                    filenames.append(f"data/MOL2_files/{ligand_id}.mol2")
+                if ligand_extension == "pdbqt":
+                    pdb_mol2 = [m for m in pybel.readfile(filename = f"data/PDBQT_files/{ligand_name}", format='pdbqt')][0]
                     out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{ligand_id}.mol2", overwrite = True, format='mol2')
                     out_mol2.write(pdb_mol2)
                     ligs.append(ligand_id)
@@ -146,7 +162,13 @@ with st.form("enter_docking_parameters"):
             # convert to pdbqt
             n = 0
             filenames_pdbqt = []
-            for i in filenames:
+            for index, i in enumerate(filenames):
+                ligand_extension = orig_filenames[index].split(".")[-1]
+                # skip conversion if ligand is already in pdbqt format
+                if ligand_extension == "pdbqt":
+                    filenames_pdbqt.append(f"data/PDBQT_files/{ligs[n]}.pdbqt")
+                    n += 1
+                    continue
                 ligand = [m for m in pybel.readfile(filename= str(i) ,format='mol2')][0]
                 s = f"data/PDBQT_files/{ligs[n]}_H.pdbqt"
                 filenames_pdbqt.append(s)
@@ -187,6 +209,7 @@ with st.form("enter_docking_parameters"):
                 st.switch_page("pages/blind-docking.py")
             else:
                 st.switch_page("pages/site-specific-docking.py")
+
 if not local and "_pdb_id" in st.session_state:
     st.write("Make sure to download your receptor and ligand files before proceeding!")
     filenames = st.session_state._filenames

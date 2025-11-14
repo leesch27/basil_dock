@@ -1,9 +1,10 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import sys, os
-from io import StringIO
+from io import StringIO, BytesIO
 import glob
 import pandas as pd
+import zipfile
 
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdCoordGen
@@ -30,17 +31,20 @@ def view_ligand(mol):
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)
 
-cur_dir = os.getcwd()
-local = True
-if "mount/src" in cur_dir:
-    local = False
+#cur_dir = os.getcwd()
+#local = True
+#if "mount/src" in cur_dir:
+#    local = False
+
+load_keys("local")
+local = st.session_state._local
 
 try:
     load_keys("current_dir")
-    current_dir = st.session_state.current_dir
+    current_dir = st.session_state._current_dir
 except:
     current_dir = create_folders()
-    st.session_state.current_dir = current_dir
+    st.session_state._current_dir = current_dir
 
 if 'result_deriv_type_list' not in st.session_state:
     st.session_state.result_deriv_type_list = {}
@@ -61,6 +65,7 @@ if canon_ligand is not None:
     file_location_data = os.path.join('data', 'MOL2_files', '*')
     ligands = glob.glob(file_location_data)
     if canon_ligand.name not in ligands:
+        st.session_state.canon_ligand_name = canon_ligand.name
         stringio = StringIO(canon_ligand.getvalue().decode("utf-8"))
         bytes_data = stringio.read()
         with open(f"data/MOL2_files/{canon_ligand.name}", "w+") as datafile:
@@ -86,8 +91,8 @@ if st.session_state.deriv_of_interest != None and st.session_state.deriv_of_inte
         rdCoordGen.AddCoords(mol_of_interest)
         mol3d = molecule_to_3d(mol_of_interest)
         view_ligand(mol3d)
-    
-if "mount/src" in current_dir:
+
+if not local:
     #single derivative
     smiles = list(st.session_state.result_deriv_type_list.keys())[list(st.session_state.result_deriv_type_list.values()).index(st.session_state.deriv_of_interest)]
     index = st.session_state.result_deriv_smiles_list.index(smiles)
@@ -96,17 +101,54 @@ if "mount/src" in current_dir:
     derivs_single, fxnal_groups_derivs_single = create_derivative_files(selected_mol, selected_smile, st.session_state.result_deriv_type_list)
     for value in derivs_single:
         filename = f"data/MOL2_files/{value}.mol2"
-        filename_H = f"data/MOL2_files/{value}_H.mol2"
         filename_pdbqt = f"data/PDBQT_files/{value}.pdbqt"
+    
     #all derivatives
     derivs_all, fxnal_groups_derivs_all = create_derivative_files(st.session_state.result_deriv_mol_list, st.session_state.result_deriv_smiles_list, st.session_state.result_deriv_type_list)
     filenames = []
-    filenames_H = []
     filenames_pdbqt = []
     for value in derivs_all:
         filenames.append(f"data/MOL2_files/{value}.mol2")
-        filenames_H.append(f"data/MOL2_files/{value}_H.mol2")
         filenames_pdbqt.append(f"data/PDBQT_files/{value}.pdbqt")
+
+    buf_mol2 = BytesIO()
+    buf_pdbqt = BytesIO()
+
+    with zipfile.ZipFile(buf_mol2, "x") as lig_mol_zip:
+        for filename_temp in filenames:
+            lig_mol_zip.write(filename_temp, os.path.basename(filename_temp))
+
+    with zipfile.ZipFile(buf_pdbqt, "x") as lig_mol_zip:
+        for filename_temp in filenames_pdbqt:
+            lig_mol_zip.write(filename_temp, os.path.basename(filename_temp))
+
+    with open(filename, "r") as pdb_file:
+        st.download_button(
+            label="Download Selected Derivative Ligand as MOL2",
+            data=pdb_file.read().encode("utf-8"),
+            file_name=filename,
+            on_click="ignore",
+            mime = "application/vnd.sybyl.mol2")
+
+    with open(filename_pdbqt, "r") as pdbqt_file:
+        st.download_button(
+            label="Download Selected Derivative Ligand as PDBQT",
+            data=pdbqt_file.read().encode("utf-8"),
+            file_name=filename_pdbqt,
+            on_click="ignore",
+            mime = "text/plain")
+    
+    st.download_button(
+        label="Download Ligand Files (MOL2) for All Derivatives as ZIP",
+        data=buf_mol2.getvalue(),
+        file_name=f"{st.session_state.canon_ligand_name}_deriv_ligands_MOL2.zip",
+        on_click="ignore",)
+    
+    st.download_button(
+        label="Download Ligand Files (PDBQT) for All Derivatives as ZIP",
+        data=buf_pdbqt.getvalue(),
+        file_name=f"{st.session_state.canon_ligand_name}_deriv_ligands_PDBQT.zip",
+        on_click="ignore",)
 else:
     if st.button("Create Files for Selected Derivative of Ligand"):
         smiles = list(st.session_state.result_deriv_type_list.keys())[list(st.session_state.result_deriv_type_list.values()).index(st.session_state.deriv_of_interest)]

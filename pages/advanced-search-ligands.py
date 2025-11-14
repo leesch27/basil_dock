@@ -68,17 +68,20 @@ result_lig_list = []
 if 'result_lig_list' not in st.session_state:
     st.session_state.result_lig_list = []
 
-cur_dir = os.getcwd()
-local = True
-if "mount/src" in cur_dir:
-    local = False
+#cur_dir = os.getcwd()
+#local = True
+#if "mount/src" in cur_dir:
+#    local = False
+
+load_keys("local")
+local = st.session_state._local
 
 try:
     load_keys("current_dir")
-    current_dir = st.session_state.current_dir
+    current_dir = st.session_state._current_dir
 except:
     current_dir = create_folders()
-    st.session_state.current_dir = current_dir
+    st.session_state._current_dir = current_dir
 
 st.title("Advanced Ligand Search using RCSB PDB")
 st.write("Select attributes to search for ligands in the RCSB PDB database. At least one attribute must be selected to perform a search.")
@@ -153,14 +156,14 @@ if st.session_state.lig_of_interest != None and st.session_state.lig_of_interest
         out_mol2.write(pdb_mol2)
     view_ligands(ligand)
 
-if "mount/src" in current_dir:
+if not local:
     if st.button("Prepare download"):
         pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
         out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
         out_mol2.write(pdb_mol2)
         with open(out_mol2, "r") as pdb_file:
             st.download_button(
-                label="Download selected receptor as PDB/ENT",
+                label="Download selected ligand as MOL2",
                 data=pdb_file.read().encode("utf-8"),
                 file_name=f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2",
                 on_click="ignore",
