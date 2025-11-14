@@ -115,7 +115,6 @@ with st.form("enter_docking_parameters"):
             st.write("Writing ligand files...")
             for uploaded_file in ligands:
                 ligand_name = uploaded_file.name
-                orig_filenames.append(ligand_name)
                 ligand_id_proto = ligand_name.split(".")[:-1]
                 ligand_id = "".join(str(x) for x in ligand_id_proto)
                 ligand_extension = ligand_name.split(".")[-1]
@@ -134,15 +133,18 @@ with st.form("enter_docking_parameters"):
                     out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{ligand_id}.mol2", overwrite = True, format='mol2')
                     out_mol2.write(pdb_mol2)
                     ligs.append(ligand_id)
+                    orig_filenames.append(ligand_name)
                     filenames.append(f"data/MOL2_files/{ligand_id}.mol2")
                 if ligand_extension == "pdbqt":
                     pdb_mol2 = [m for m in pybel.readfile(filename = f"data/PDBQT_files/{ligand_name}", format='pdbqt')][0]
                     out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{ligand_id}.mol2", overwrite = True, format='mol2')
                     out_mol2.write(pdb_mol2)
                     ligs.append(ligand_id)
+                    orig_filenames.append(ligand_name)
                     filenames.append(f"data/MOL2_files/{ligand_id}.mol2")
                 else:
                     ligs.append(ligand_id)
+                    orig_filenames.append(ligand_name)
                     filenames.append(f"data/MOL2_files/{ligand_id}.mol2")
             # ligand sanitization
             # add hydrogens to ligands
@@ -162,6 +164,8 @@ with st.form("enter_docking_parameters"):
             # convert to pdbqt
             n = 0
             filenames_pdbqt = []
+            print(filenames)
+            print(orig_filenames)
             for index, i in enumerate(filenames):
                 temp_name = orig_filenames[index]
                 print(temp_name)
