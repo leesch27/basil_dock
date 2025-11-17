@@ -123,7 +123,10 @@ docking_engine = st.session_state._docking_engine
 num_poses = st.session_state._poses_val
 exhaustiveness = st.session_state._exhaust_val
 
-st.title("Site-Specific Docking Parameters")
+title = st.columns([0.25, 0.75])
+title[0].image("img/logo.png", width=200)
+title[1].title("Site-Specific Docking Parameters")
+
 st.write("Review and set parameters for site-specific docking")
 col1, col2 = st.columns(2)
 with col1:

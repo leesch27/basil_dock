@@ -33,6 +33,9 @@ def load_keys(key):
 
 load_keys("local")
 local = st.session_state._local
+title = st.columns([0.25, 0.75])
+title[0].image("img/logo.png", width=200)
+title[1].title("Set Docking Parameters")
 
 with st.form("enter_docking_parameters"):
     header = st.columns([1,1])

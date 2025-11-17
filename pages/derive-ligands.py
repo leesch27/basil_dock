@@ -31,11 +31,6 @@ def view_ligand(mol):
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)
 
-#cur_dir = os.getcwd()
-#local = True
-#if "mount/src" in cur_dir:
-#    local = False
-
 load_keys("local")
 local = st.session_state._local
 
@@ -58,7 +53,10 @@ if 'result_deriv_smiles_list' not in st.session_state:
 if 'deriv_of_interest' not in st.session_state:
     st.session_state.deriv_of_interest = ""
 
-st.title("Derive Ligands from Existing Ligands")
+title = st.columns([0.25, 0.75])
+title[0].image("img/logo.png", width=200)
+title[1].title("Derive Ligands from Existing Ligands")
+
 canon_ligand = st.file_uploader("Upload Ligand to Derive", accept_multiple_files= False, type="mol2", key = "canonical_ligand_upload")
 if canon_ligand is not None:
     # check if canonical ligand is in MOL2 file folder

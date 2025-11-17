@@ -36,8 +36,11 @@ try:
 except:
     current_dir = create_folders()
     st.session_state._current_dir = current_dir
-    
-st.title("Create Ligands from SMILES Strings")
+
+title = st.columns([0.25, 0.75])
+title[0].image("img/logo.png", width=200)
+title[1].title("Create Ligands from SMILES Strings")
+
 row1 = st.columns([1,1])
 selected_lig = row1[0].text_input(label="Ligand Name", placeholder='Type Ligand Name Here', key="lig_name")
 selected_pocket = row1[1].text_input(label="Ligand SMILES String", placeholder='Type Ligand SMILES String Here', key="lig_smiles")

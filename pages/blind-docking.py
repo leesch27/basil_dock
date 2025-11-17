@@ -137,7 +137,10 @@ docking_engine = st.session_state._docking_engine
 num_poses = st.session_state._poses_val
 exhaustiveness = st.session_state._exhaust_val
 
-st.title("Blind Docking Parameters")
+title = st.columns([0.25, 0.75])
+title[0].image("img/logo.png", width=200)
+title[1].title("Blind Docking Parameters")
+
 st.write("Review and set parameters for blind docking")
 with st.status("Running fpocket on the protein, searching for binding pockets...") as status:
     # run fpocket to find potential binding pockets on protein

@@ -128,7 +128,10 @@ def create_plf_viewer(ifp, plf_ligand, plf_prot):
     comp = Complex3D(ifp, plf_ligand, plf_prot)
     components.html(comp.display()._make_html(), height = 500,width=1000)
 
-st.title("Docking Analysis")
+title = st.columns([0.25, 0.75])
+title[0].image("img/logo.png", width=200)
+title[1].title("Docking Analysis")
+
 st.write("Compare poses between ligand conformations")
 data_retrieval = st.file_uploader("Upload Results", accept_multiple_files= False, type="csv", key = "docking_data_upload")
 #initialize session state variables

@@ -45,7 +45,10 @@ except:
 
 comp_operators = ["==", ">", ">=", "<", "<="]
 
-st.title("Advanced Receptor Search using RCSB PDB")
+title = st.columns([0.25, 0.75])
+title[0].image("img/logo.png", width=200)
+title[1].title("Advanced Receptor Search using RCSB PDB")
+
 st.write("Select attributes to search for protein receptors in the RCSB PDB database. At least one attribute must be selected to perform a search.")
 with st.container(border=True):
     row1 = st.columns([2,1,2])

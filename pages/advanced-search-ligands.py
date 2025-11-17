@@ -68,11 +68,6 @@ result_lig_list = []
 if 'result_lig_list' not in st.session_state:
     st.session_state.result_lig_list = []
 
-#cur_dir = os.getcwd()
-#local = True
-#if "mount/src" in cur_dir:
-#    local = False
-
 load_keys("local")
 local = st.session_state._local
 
@@ -83,7 +78,10 @@ except:
     current_dir = create_folders()
     st.session_state._current_dir = current_dir
 
-st.title("Advanced Ligand Search using RCSB PDB")
+title = st.columns([0.25, 0.75])
+title[0].image("img/logo.png", width=200)
+title[1].title("Advanced Ligand Search using RCSB PDB")
+
 st.write("Select attributes to search for ligands in the RCSB PDB database. At least one attribute must be selected to perform a search.")
 with st.container(border=True):
     st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. alanine)',key="chem_name")
