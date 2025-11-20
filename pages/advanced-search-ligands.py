@@ -159,7 +159,7 @@ if not local:
         pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
         out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
         out_mol2.write(pdb_mol2)
-        with open(out_mol2, "r") as pdb_file:
+        with open(f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", "r") as pdb_file:
             st.download_button(
                 label="Download selected ligand as MOL2",
                 data=pdb_file.read().encode("utf-8"),

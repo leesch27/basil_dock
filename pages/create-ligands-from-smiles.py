@@ -60,7 +60,7 @@ if st.button("Generate Ligand from SMILES"):
             st.success(f'Ligand {st.session_state.lig_name} created successfully!')
             view_ligands(st.session_state.lig_name)
             if local == False:
-                with open(out, "r") as pdb_file:
+                with open(f"data/MOL2_files/{lig_name}.mol2", "r") as pdb_file:
                     st.download_button(
                         label="Download selected ligand as MOL2",
                         data=pdb_file.read().encode("utf-8"),

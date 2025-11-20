@@ -73,8 +73,12 @@ with st.form("enter_docking_parameters"):
             st.error("Please upload at least one ligand to proceed.")
             st.stop()
 
-        current_dir = create_folders()
-        st.session_state._current_dir = current_dir
+        try:
+            load_keys("current_dir")
+            current_dir = st.session_state._current_dir
+        except:
+            current_dir = create_folders()
+            st.session_state._current_dir = current_dir
 
         # get receptor data
         with st.status("Retrieving protein and ligands...") as status:

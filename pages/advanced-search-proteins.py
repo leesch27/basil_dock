@@ -164,9 +164,10 @@ st.selectbox("Select protein to view", st.session_state.result_prot_list, key = 
 if st.session_state.prot_of_interest != None and st.session_state.prot_of_interest != "":
     pdb_list = PDBList()
     pdb_prot_filename = pdb_list.retrieve_pdb_file(st.session_state.prot_of_interest, pdir="data/test_files", file_format="pdb")
-    view_prot(st.session_state.prot_of_interest)
+    lower_id = st.session_state.prot_of_interest.lower()
+    view_prot(lower_id)
 
-if "mount/src" in current_dir:
+if not local:
     if st.button("Prepare download"):
         pdb_list = PDBList()
         pdb_lower = st.session_state.prot_of_interest.lower()
