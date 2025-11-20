@@ -3,6 +3,7 @@ import sys, os
 import numpy as np
 import pandas as pd
 import numbers
+from ligandsplitter.basefunctions import create_folders
 
 def save_keys(key):
     st.session_state[key] = st.session_state["_" + key]
@@ -14,6 +15,11 @@ if "mount/src" in cur_dir:
 
 st.session_state['_local'] = local
 save_keys("local")
+
+if "_current_dir" not in st.session_state:
+    current_dir = create_folders()
+    st.session_state._current_dir = current_dir
+    save_keys("current_dir")
 
 pages = {
     "Set parameters to be used for docking": [
