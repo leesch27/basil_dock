@@ -222,6 +222,7 @@ dependencies:
   - sqlalchemy=2.0.31
   - stack_data=0.6.2
   - statsmodels=0.14.2
+  - streamlit=1.50.0
   - terminado=0.18.1
   - threadpoolctl=3.5.0
   - tidynamics=1.1.2
