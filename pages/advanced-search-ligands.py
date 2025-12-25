@@ -16,18 +16,14 @@ from ligandsplitter.basefunctions import create_folders
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
 
-def molecule_to_3d(molecule):
-    mol = Chem.Mol(molecule)
-    mol = AllChem.AddHs(mol, addCoords=True)
-    AllChem.EmbedMolecule(mol)
-    AllChem.MMFFOptimizeMolecule(mol)
-    return mol
-
-def view_ligand(mol):
-    view = py3Dmol.view(
-    data=Chem.MolToMolBlock(mol),  # Convert the RDKit molecule for py3Dmol
-    style={'stick':{'colorscheme':'greenCarbon','radius':0.2}}
-    )
+def view_ligands(ligand):
+    lig = f"{current_dir}/data/test_files/{ligand}_ligand.sdf"
+    view = py3Dmol.view()
+    view.removeAllModels()
+    view.setViewStyle({'style':'outline','color':'black','width':0.1})
+    view.addModel(open(lig,'r').read(),format='mol2')
+    ref_m = view.getModel()
+    ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)
 
@@ -153,16 +149,15 @@ if search:
 # view ligands that meet criteria
 st.selectbox("Select ligand to view", st.session_state.result_lig_list, key = "lig_of_interest")
 if st.session_state.lig_of_interest != None and st.session_state.lig_of_interest != "":
-    rdCoordGen.AddCoords(st.session_state.lig_of_interest)
-    mol3d = molecule_to_3d(st.session_state.lig_of_interest)
-    view_ligand(mol3d)
-# if unable to create mol3d, show error message
-else:
-    st.write("Error: Could not create RDKit Mol object for this derivative. Cannot display 3D structure.")
+    try:
+        lig_filename = get_lig_files(st.session_state.lig_of_interest)
+        view_ligands(st.session_state.lig_of_interest)
+    except: # if unable to create ligand, show error message
+        st.write("Error: Cannot retrieve files or display 3D structure for selected ligand.")
+        lig_filename = None
 
 if not local:
-    if st.button("Prepare download"):
-        lig_filename = get_lig_files(st.session_state.lig_of_interest)
+    if st.button("Prepare download") and lig_filename != None:
         pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
         out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
         out_mol2.write(pdb_mol2)
@@ -175,8 +170,7 @@ if not local:
                 mime = "application/vnd.sybyl.mol2")
 else:
     # save as MOL2
-    if st.button("Download selected ligand as MOL2"):
-        lig_filename = get_lig_files(st.session_state.lig_of_interest)
+    if st.button("Download selected ligand as MOL2") and lig_filename != None:
         pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
         out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
         out_mol2.write(pdb_mol2)
