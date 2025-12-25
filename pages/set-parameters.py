@@ -26,10 +26,6 @@ def save_keys(key):
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
 
-#cur_dir = os.getcwd()
-#local = True
-#if "mount/src" in cur_dir:
-#    local = False
 
 load_keys("local")
 local = st.session_state._local
@@ -180,7 +176,8 @@ with st.form("enter_docking_parameters"):
                     n += 1
                     continue
                 ligand = [m for m in pybel.readfile(filename= str(i) ,format='mol2')][0]
-                s = f"data/PDBQT_files/{ligs[n]}_H.pdbqt"
+                #s = f"data/PDBQT_files/{ligs[n]}_H.pdbqt"
+                s = f"data/PDBQT_files/{ligs[n]}.pdbqt"
                 filenames_pdbqt.append(s)
                 ligand.write(filename = s, format='pdbqt', overwrite=True)
                 n += 1

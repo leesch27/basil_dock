@@ -23,16 +23,30 @@ def molecule_to_3d(molecule):
     AllChem.MMFFOptimizeMolecule(mol)
     return mol
 
-def view_ligands(ligand):
-    lig = f"{current_dir}/data/test_files/{ligand}_ligand.sdf"
-    view = py3Dmol.view()
-    view.removeAllModels()
-    view.setViewStyle({'style':'outline','color':'black','width':0.1})
-    view.addModel(open(lig,'r').read(),format='mol2')
-    ref_m = view.getModel()
-    ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
+def view_ligand(mol):
+    view = py3Dmol.view(
+    data=Chem.MolToMolBlock(mol),  # Convert the RDKit molecule for py3Dmol
+    style={'stick':{'colorscheme':'greenCarbon','radius':0.2}}
+    )
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)
+
+def get_lig_files(ligand):
+    try: # try getting ligand as sdf file first
+        lig_mol2 = requests.get(f'https://files.rcsb.org/ligands/download/{ligand}_ideal.sdf')
+        with open(f"data/test_files/{ligand}_ligand.sdf", "w+") as file:
+            file.write(lig_mol2.text)
+        lig_filename = f"data/test_files/{ligand}_ligand.sdf"
+    except: # if sdf doesn't work, get ligand as cif file
+        lig_mol2 = requests.get(f'https://files.rcsb.org/ligands/download/{ligand}.cif')
+        with open(f"data/test_files/{ligand}_ligand.cif", "w+") as file:
+            file.write(lig_mol2.text)
+        lig_filename = f"data/test_files/{ligand}_ligand.sdf"
+        lig_filename_cif = f"data/test_files/{ligand}_ligand.cif"
+        pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename_cif, format='cif')][0]
+        out_mol2 = pybel.Outputfile(filename = lig_filename, overwrite = True, format='sdf')
+        out_mol2.write(pdb_mol2)
+    return lig_filename
 
 chem_types = ("No Selection","D-beta-peptide, C-gamma linking",
                 "D-gamma-peptide, C-delta linking",
@@ -84,6 +98,7 @@ title[1].title("Advanced Ligand Search using RCSB PDB")
 
 st.write("Select attributes to search for ligands in the RCSB PDB database. At least one attribute must be selected to perform a search.")
 with st.container(border=True):
+    # LEE NOTE TO LEE: Need to figure out difference between chem name and chem name synonym. need both? are they special?
     st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. alanine)',key="chem_name")
     st.text_input(label="Search by Chemical Name Synonym?", placeholder='Type Synonym Here (e.g. acetylsalicylic acid)',key="chem_syn")
     st.text_input(label="Search by Chemical ID?", placeholder='Type RCSB Chemical ID Here (e.g. AIN)',key="chem_id")
@@ -138,24 +153,16 @@ if search:
 # view ligands that meet criteria
 st.selectbox("Select ligand to view", st.session_state.result_lig_list, key = "lig_of_interest")
 if st.session_state.lig_of_interest != None and st.session_state.lig_of_interest != "":
-    try: # try getting ligand as sdf file first
-        ligand = st.session_state.lig_of_interest
-        lig_mol2 = requests.get(f'https://files.rcsb.org/ligands/download/{ligand}_ideal.sdf')
-        with open(f"data/test_files/{ligand}_ligand.sdf", "w+") as file:
-            file.write(lig_mol2.text)
-        lig_filename = f"data/test_files/{ligand}_ligand.sdf"
-    except: # if sdf doesn't work, get ligand as cif file
-        lig_mol2 = requests.get(f'https://files.rcsb.org/ligands/download/{ligand}.cif')
-        with open(f"data/test_files/{ligand}_ligand.cif", "w+") as file:
-            file.write(lig_mol2.text)
-        lig_filename = f"data/test_files/{ligand}_ligand.cif"
-        pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='cif')][0]
-        out_mol2 = pybel.Outputfile(filename = f"data/test_files/{ligand}_ligand.sdf", overwrite = True, format='sdf')
-        out_mol2.write(pdb_mol2)
-    view_ligands(ligand)
+    rdCoordGen.AddCoords(st.session_state.lig_of_interest)
+    mol3d = molecule_to_3d(st.session_state.lig_of_interest)
+    view_ligand(mol3d)
+# if unable to create mol3d, show error message
+else:
+    st.write("Error: Could not create RDKit Mol object for this derivative. Cannot display 3D structure.")
 
 if not local:
     if st.button("Prepare download"):
+        lig_filename = get_lig_files(st.session_state.lig_of_interest)
         pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
         out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
         out_mol2.write(pdb_mol2)
@@ -169,7 +176,7 @@ if not local:
 else:
     # save as MOL2
     if st.button("Download selected ligand as MOL2"):
-        #add garbage collection for test files?
+        lig_filename = get_lig_files(st.session_state.lig_of_interest)
         pdb_mol2 = [m for m in pybel.readfile(filename = lig_filename, format='sdf')][0]
         out_mol2 = pybel.Outputfile(filename = f"data/MOL2_files/{st.session_state.lig_of_interest}.mol2", overwrite = True, format='mol2')
         out_mol2.write(pdb_mol2)

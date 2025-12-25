@@ -26,7 +26,6 @@ import warnings
 warnings.filterwarnings("ignore")
 warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
-#sys.path.insert(1, '../utilities/')
 from utilities.utils import pdbqt_to_sdf
 from utilities.basil_utils import get_prot_pockets_data, get_ifps, get_scores, save_dataframe, get_largest_array_column, expand_df, fill_df
 
@@ -76,14 +75,23 @@ def dock_vina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose)
     # iterate through each pocket and dock for a given ligand
     v = Vina(sf_name='vina')
     v.set_receptor(f'data/PDBQT_files/{pdb_id}_protein.pdbqt')
-    v.set_ligand_from_file(f"data/PDBQT_files/{ligand}_H.pdbqt")
+    ligand_short = ligand.split("/")[-1]
+    print(ligand_short) ## TEST TEST
+    
+    # LEE NOTE TO LEE: work on making _H identifying obsolete
+    if "_H.pdbqt" in ligand_short:
+        ligand_short2 = ligand_short.split("_H.pdbqt")[0]
+    else:
+        ligand_short2 = ligand_short.split(".pdbqt")[0]
+    
+    v.set_ligand_from_file(ligand)
     if len(pocket_center) == len(pocket_size):
         for cav_num, id in enumerate(cavity):
             v.compute_vina_maps(center = pocket_center[cav_num], box_size = pocket_size[cav_num])
             v.dock(exhaustiveness=exhaust, n_poses=pose)
-            v.write_poses(f"data/vina_out/{ligand}_vina_pocket_{id}.pdbqt", n_poses=pose, overwrite=True)
+            v.write_poses(f"data/vina_out/{ligand_short2}_vina_pocket_{id}.pdbqt", n_poses=pose, overwrite=True)
             # write output to sdf
-            pdbqt_to_sdf(pdbqt_file=f"data/vina_out/{ligand}_vina_pocket_{id}.pdbqt",output=f"data/vina_out_2/{ligand}_pocket_{id}_vina_out_2.sdf")
+            pdbqt_to_sdf(pdbqt_file=f"data/vina_out/{ligand_short2}_vina_pocket_{id}.pdbqt",output=f"data/vina_out_2/{ligand_short2}_pocket_{id}_vina_out_2.sdf")
 
 def dock_smina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
     # iterate through each pocket and dock for a given ligand
@@ -228,7 +236,7 @@ if st.button("Dock!"):
             elif(bool_vina2 == False):
                 print("ERROR: Cannot find 'vina_out_2' folder. Creating folder...")
                 os.mkdir(vina_out_2)
-            for ligand in ligs:
+            for ligand in filenames_pdbqt:
                 st.write(f"Docking ligand {ligand}...")
                 dock_vina(pdb_id, ligand, cav_ids, pocket_center, pocket_size, exhaustiveness, num_poses)
             status_vina.update(label="Docking with Autodock Vina completed!")
