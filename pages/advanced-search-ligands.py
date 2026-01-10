@@ -33,7 +33,7 @@ def get_lig_files(ligand):
         with open(f"data/test_files/{ligand}_ligand.sdf", "w+") as file:
             file.write(lig_mol2.text)
         lig_filename = f"data/test_files/{ligand}_ligand.sdf"
-    except: # if sdf doesn't work, get ligand as cif file
+    except: # if sdf doesn't work, get ligand as cif file. theoretically should not be needed
         lig_mol2 = requests.get(f'https://files.rcsb.org/ligands/download/{ligand}.cif')
         with open(f"data/test_files/{ligand}_ligand.cif", "w+") as file:
             file.write(lig_mol2.text)
@@ -94,57 +94,61 @@ title[1].title("Advanced Ligand Search using RCSB PDB")
 
 st.write("Select attributes to search for ligands in the RCSB PDB database. At least one attribute must be selected to perform a search.")
 with st.container(border=True):
-    # LEE NOTE TO LEE: Need to figure out difference between chem name and chem name synonym. need both? are they special?
-    st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. alanine)',key="chem_name")
+    # LEE NOTE TO LEE: Need to figure out difference between chem name and chem name synonym. need both? are they special? possibly find way to make them the same input (e.g. try name first, if no results, try synonym)
+    st.text_input(label="Search by Chemical Name?", placeholder='Type Chemical Name Here (e.g. 2-(ACETYLOXY)BENZOIC ACID)',key="chem_name")
     st.text_input(label="Search by Chemical Name Synonym?", placeholder='Type Synonym Here (e.g. acetylsalicylic acid)',key="chem_syn")
     st.text_input(label="Search by Chemical ID?", placeholder='Type RCSB Chemical ID Here (e.g. AIN)',key="chem_id")
     st.selectbox("Search by Chemical Type?", chem_types, placeholder="Select chemical type", accept_new_options=False, key = "chem_type")
     st.text_input(label="Search by Chemical Brand Name?", placeholder='Type DrugBank Brand Name Here (e.g. Aspirin)',key="chem_brand")
     st.text_input(label="Search by Formula Similarity?", placeholder='Type Ligand Formula Here (e.g. C9H8O4)',key="chem_formula")
-    st.text_input(label="Search by Structure Similarity?", placeholder='Type Ligand SMILES Here',key="chem_struct")
+    st.text_input(label="Search by Structure Similarity (SMILES string)?", placeholder='Type Ligand SMILES Here',key="chem_struct")
     search = st.button("Search for ligands")
 
 if search:
-    attr = [st.session_state.chem_name, st.session_state.chem_syn, st.session_state.chem_id, st.session_state.chem_type, st.session_state.chem_brand, st.session_state.chem_formula, st.session_state.chem_struct]
-    attr_bool = []
-    values = []
-    attr_bool_dict = {}
-    attr_value_dict = {}
-    for index, item in enumerate(attr):
-        key = f"attr{index + 1}"
-        values.append(item)
-        attr_value_dict[key] = item
-        if item == None or item == "" or item == "No Selection":
-            attr_bool.append("No")
-            attr_bool_dict[key] = "No"
+    try:
+        attr = [st.session_state.chem_name, st.session_state.chem_syn, st.session_state.chem_id, st.session_state.chem_type, st.session_state.chem_brand, st.session_state.chem_formula, st.session_state.chem_struct]
+        attr_bool = []
+        values = []
+        attr_bool_dict = {}
+        attr_value_dict = {}
+        for index, item in enumerate(attr):
+            key = f"attr{index + 1}"
+            values.append(item)
+            attr_value_dict[key] = item
+            if item == None or item == "" or item == "No Selection":
+                attr_bool.append("No")
+                attr_bool_dict[key] = "No"
+            else:
+                attr_bool.append("Yes")
+                attr_bool_dict[key] = "Yes"
+        q1 = AttributeQuery(attribute = "chem_comp.name", operator = "exact_match", value = values[0])
+        q2 = AttributeQuery(attribute = "rcsb_chem_comp_synonyms.name", operator = "contains_phrase", value = values[1], service = "text_chem")
+        q3 = AttributeQuery(attribute = "rcsb_id", operator = "exact_match", value = values[2], service = "text_chem")
+        q4 = AttributeQuery(attribute = "chem_comp.type", operator = "exact_match", value = values[3])
+        q5 = AttributeQuery(attribute = "drugbank_info.brand_names", operator = "contains_phrase", value = values[4])
+        q6 = ChemSimilarityQuery(query_type = "formula", value = values[5])
+        q7 = ChemSimilarityQuery(query_type = "descriptor", descriptor_type = "SMILES", match_type="fingerprint-similarity", value = values[6])
+        attr_list = [q1, q2, q3, q4, q5, q6, q7]
+        positives = []
+        global query
+        for number, value in enumerate(attr_bool):
+            if value == "Yes":
+                positives.append(attr_list[number])
+        if len(positives) > 0:
+            if len(positives) == 1:
+                query = positives[0]
+            else:
+                query = ' & '.join(x for x in positives)
         else:
-            attr_bool.append("Yes")
-            attr_bool_dict[key] = "Yes"
-    q1 = AttributeQuery(attribute = "chem_comp.name", operator = "exact_match", value = values[0])
-    q2 = AttributeQuery(attribute = "rcsb_chem_comp_synonyms.name", operator = "contains_phrase", value = values[1], service = "text_chem")
-    q3 = AttributeQuery(attribute = "rcsb_id", operator = "exact_match", value = values[2], service = "text_chem")
-    q4 = AttributeQuery(attribute = "chem_comp.type", operator = "exact_match", value = values[3])
-    q5 = AttributeQuery(attribute = "drugbank_info.brand_names", operator = "contains_phrase", value = values[4])
-    q6 = ChemSimilarityQuery(query_type = "formula", value = values[5])
-    q7 = ChemSimilarityQuery(query_type = "descriptor", descriptor_type = "SMILES", match_type="fingerprint-similarity", value = values[6])
-    attr_list = [q1, q2, q3, q4, q5, q6, q7]
-    positives = []
-    global query
-    for number, value in enumerate(attr_bool):
-        if value == "Yes":
-            positives.append(attr_list[number])
-    if len(positives) > 0:
-        if len(positives) == 1:
-            query = positives[0]
-        else:
-            query = ' & '.join(x for x in positives)
-    else:
-        print("Invalid.")
-    result_lig = list(query())
-    result_lig_list_temp = []
-    for nonPoly in query(return_type="mol_definition"):
-        result_lig_list_temp.append(nonPoly)
-    st.session_state.result_lig_list = result_lig_list_temp
+            print("Invalid.")
+        result_lig = list(query())
+        result_lig_list_temp = []
+        for nonPoly in query(return_type="mol_definition"):
+            result_lig_list_temp.append(nonPoly)
+        st.session_state.result_lig_list = result_lig_list_temp
+    except:
+        # need to add personalized error message
+        pass
 
 # view ligands that meet criteria
 st.selectbox("Select ligand to view", st.session_state.result_lig_list, key = "lig_of_interest")
