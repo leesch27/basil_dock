@@ -26,7 +26,7 @@ def molecule_to_3d(molecule):
 def view_ligand(mol):
     view = py3Dmol.view(
     data=Chem.MolToMolBlock(mol),  # Convert the RDKit molecule for py3Dmol
-    style={"stick": {}, "sphere": {"scale": 0.3}}
+    style={'stick':{'colorscheme':'greenCarbon','radius':0.2}}
     )
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)

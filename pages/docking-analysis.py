@@ -21,6 +21,12 @@ from IPython.display import display
 
 from ligandsplitter.ligandanalysis import get_ligand_properties, oral_bioactive_classifier, interaction_regressor
 
+def load_keys(key):
+    st.session_state["_" + key] = st.session_state[key]
+    if st.session_state["_" + key] is None:
+        st.error(f"Cannot determine value for {key}.")
+        st.stop()
+
 def docking_data_comparison(select_type, pose_mode, pdb_id, ligand_number, select_dock, form_items1, form_items2):
     if select_type == "Blind docking":
         if pose_mode == "Compare to original pose":
@@ -132,7 +138,34 @@ title = st.columns([0.25, 0.75])
 title[0].image("img/logo.png", width=200)
 title[1].title("Docking Analysis")
 
-st.write("Compare poses between ligand conformations")
+load_keys("local")
+local = st.session_state._local
+if local:
+    st.write("Running in local mode. Please upload docking results CSV file from the basil_dock/data folder to analyze.")
+    st.markdown('''
+                Look for a CSV file ending in one of the following:
+                * docking_information_vina
+                * docking_information_smina
+                * docking_information_vina_extended
+                * docking_information_smina_extended
+
+
+                :orange[For example: 2HKK_2_ligands_docking_information_vina_extended.csv]
+    ''')
+else:
+    st.markdown("Running in cloud mode. Please upload downloaded docking results CSV file (check your downloads folder) to analyze.")
+    st.markdown('''
+                Look for a CSV file ending in one of the following:
+                * docking_information_vina
+                * docking_information_smina
+                * docking_information_vina_extended
+                * docking_information_smina_extended
+
+                
+                :orange[For example: 2HKK_2_ligands_docking_information_vina_extended.csv]
+    ''')
+
+st.write("Upload docking results to compare poses between ligand conformations")
 data_retrieval = st.file_uploader("Upload Results", accept_multiple_files= False, type="csv", key = "docking_data_upload")
 #initialize session state variables
 if 'pdb_id' not in st.session_state:
@@ -275,8 +308,12 @@ if data_retrieval is not None:
         if(rf_affinity_importances is not None) and (xgb_affinity_importances is not None):
             st.write("Feature importances from Random Forest Regressor")
             st.dataframe(rf_affinity_importances, key = "rf_affinity_importances")
+            #rf_affinity_importances.rename_axis('Feature')
+            #st.bar_chart(rf_affinity_importances, x='Feature', y="Importance")
             st.write("Feature importances from XGBoost Regressor")
             st.dataframe(xgb_affinity_importances, key = "xgb_affinity_importances")
+            #xgb_affinity_importances.rename_axis('Feature')
+            #st.bar_chart(xgb_affinity_importances, x='Feature', y="Importance")
 
     st.write("Determine if features and properties suggest potential oral bioavailability of ligands")
     bioactive_df = pd.read_csv("data/test_train_bioactive_data.csv")
@@ -304,4 +341,6 @@ if data_retrieval is not None:
             st.write("Please select a method for analysis.")
         if bioactive_importances is not None:
             st.dataframe(bioactive_importances, key = "bioactive_importances")
+            #bioactive_importances.rename_axis('Feature')
+            #st.bar_chart(bioactive_importances, x='Feature', y="Importance")
             # write results to page

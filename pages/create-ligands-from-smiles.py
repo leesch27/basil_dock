@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 import sys, os
 
 from rdkit import Chem
+from rdkit.Chem import AllChem, rdCoordGen
 from openbabel import pybel
 import py3Dmol
 
@@ -21,11 +22,6 @@ def view_ligands(ligand):
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
     components.html(view._make_html(), height = 500,width=500)
-
-#cur_dir = os.getcwd()
-#local = True
-#if "mount/src" in cur_dir:
-#    local = False
 
 load_keys("local")
 local = st.session_state._local

@@ -5,7 +5,7 @@ import sys, os
 import glob
 
 from Bio.PDB import PDBList
-from rcsbapi.search import AttributeQuery, Attr, TextQuery, ChemSimilarityQuery
+from rcsbapi.search import AttributeQuery, Attr, TextQuery
 
 import py3Dmol
 
@@ -28,11 +28,6 @@ def view_prot(prot):
 if 'result_prot_list' not in st.session_state:
     st.session_state.result_prot_list = []
 
-#cur_dir = os.getcwd()
-#local = True
-#if "mount/src" in cur_dir:
-#    local = False
-
 load_keys("local")
 local = st.session_state._local
 
@@ -43,11 +38,12 @@ except:
     current_dir = create_folders()
     st.session_state._current_dir = current_dir
 
-comp_operators = ["==", ">", ">=", "<", "<="]
-
 title = st.columns([0.25, 0.75])
 title[0].image("img/logo.png", width=200)
 title[1].title("Advanced Receptor Search using RCSB PDB")
+
+# define advanced search attributes
+comp_operators = ["==", ">", ">=", "<", "<="]
 
 st.write("Select attributes to search for protein receptors in the RCSB PDB database. At least one attribute must be selected to perform a search.")
 with st.container(border=True):
@@ -79,85 +75,109 @@ with st.container(border=True):
     search = st.button("Search for proteins")
 
 if search:
-    attr = [st.session_state.class_name, st.session_state.class_number, st.session_state.num_chain, st.session_state.length_seq, st.session_state.molec_weight]
-    attr_comp = [st.session_state.class_name_operator, st.session_state.class_number_operator, st.session_state.num_chain_operator, st.session_state.length_seq_operator, st.session_state.molec_weight_operator]
-    attr_bool = []
-    values = []
-    attr_bool_dict = {}
-    attr_value_dict = {}
-    comp_vals = []
-    for index, item in enumerate(attr):
-        key = f"attr{index + 1}"
-        values.append(item)
-        attr_value_dict[key] = item
-        if item == None or item == "" or item == "No Selection":
-            attr_bool.append("No")
-            attr_bool_dict[key] = "No"
-        else:
-            attr_bool.append("Yes")
-            attr_bool_dict[key] = "Yes"
+    try:
+        attr = [st.session_state.class_name, st.session_state.class_number, st.session_state.num_chain, st.session_state.length_seq, st.session_state.molec_weight]
+        attr_comp = [st.session_state.class_name_operator, st.session_state.class_number_operator, st.session_state.num_chain_operator, st.session_state.length_seq_operator, st.session_state.molec_weight_operator]
+        attr_bool = []
+        values = []
+        attr_bool_dict = {}
+        attr_value_dict = {}
+        comp_vals = []
+        for index, item in enumerate(attr):
+            key = f"attr{index + 1}"
+            values.append(item)
+            attr_value_dict[key] = item
+            if item == None or item == "" or item == "No Selection":
+                attr_bool.append("No")
+                attr_bool_dict[key] = "No"
+            else:
+                attr_bool.append("Yes")
+                attr_bool_dict[key] = "Yes"
     
-    #translate initial comparison symbols into terms needed for search
-    for value in attr_comp:
-        if value == "==":
-            comp_vals.append("equals")
-        elif value == ">":
-            comp_vals.append("greater")
-        elif value == ">=":
-            comp_vals.append("greater_or_equal")
-        elif value == "<":
-            comp_vals.append("less")
-        elif value == "<=":
-            comp_vals.append("less_or_equal")
-        elif value == "is":
-            comp_vals.append("exact_match")
-        elif value == "is not empty":
-            comp_vals.append("exists")
-        elif value == "is any of":
-            comp_vals.append("in")
-        else:
-            comp_vals.append("equals")
+        #translate initial comparison symbols into terms needed for search
+        for value in attr_comp:
+            if value == "==":
+                comp_vals.append("equals")
+            elif value == ">":
+                comp_vals.append("greater")
+            elif value == ">=":
+                comp_vals.append("greater_or_equal")
+            elif value == "<":
+                comp_vals.append("less")
+            elif value == "<=":
+                comp_vals.append("less_or_equal")
+            elif value == "is":
+                comp_vals.append("exact_match")
+            elif value == "is not empty":
+                comp_vals.append("exists")
+            elif value == "is any of":
+                comp_vals.append("in")
+            else:
+                comp_vals.append("equals")
     
-    q0 = AttributeQuery(attribute = "rcsb_entry_info.selected_polymer_entity_types", operator = "exact_match", value = "Protein (only)")
-    if attr_bool[0] == "Yes":
-        q1 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.name", operator = comp_vals[0], value = values[0])
-    else:
-        q1 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.name", operator = "equals", value = "")
-    if attr_bool[1] == "Yes":
-        q2 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.id", operator = comp_vals[1], value = values[1])
-    else:
-        q2 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.id", operator = "equals", value = "")
-    if attr_bool[2] == "Yes":
-        q3 = AttributeQuery(attribute = "rcsb_entry_info.polymer_entity_count_protein", operator = comp_vals[2], value = int(values[2]))
-    else:
-        q3 = AttributeQuery(attribute = "rcsb_entry_info.polymer_entity_count_protein", operator = "equals", value = 0)
-    if attr_bool[3] == "Yes":
-        q4 = AttributeQuery(attribute = "entity_poly.rcsb_sample_sequence_length", operator = comp_vals[3], value = int(values[3]))
-    else:
-        q4 = AttributeQuery(attribute = "entity_poly.rcsb_sample_sequence_length", operator = "equals", value = 0)
-    if attr_bool[4] == "Yes":
-        q5 = AttributeQuery(attribute = "rcsb_entry_info.molecular_weight", operator = comp_vals[4], value = float(values[4]))
-    else:
-        q5 = AttributeQuery(attribute = "rcsb_entry_info.molecular_weight", operator = "equals", value = 0)
-    attr_list = [q1, q2, q3, q4, q5]
-    positives = [q0]
-    global query
-    for number, value in enumerate(attr_bool):
-        if value == "Yes":
-            positives.append(attr_list[number])
-    if len(positives) > 0:
-        if len(positives) == 1:
-            query = positives[0]
+        q0 = AttributeQuery(attribute = "rcsb_entry_info.selected_polymer_entity_types", operator = "exact_match", value = "Protein (only)")
+        # Search for Proteins by Enzyme Classification Name
+        # LEE NOTE TO LEE: appears to be controlled vocabulary. possible to make dropdown menu instead of text input?
+        # LOOK INTO THIS LATER
+        # mmcif/pdbx categories/items of interest: pdbx_entity_func_enzyme, pdbx_entity_name_taxonomy_tree, entity.pdbx_ec
+        if attr_bool[0] == "Yes":
+            if comp_vals[0] == "exists":
+                q1 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.name", operator = "exists")
+            else:
+                q1 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.name", operator = comp_vals[0], value = values[0])
         else:
-            current_len = 1
-            query = positives[0]
-            while current_len < len(positives):
-                query = query & positives[current_len]
-                current_len += 1
-    else:
-        print("Invalid.")
-    result_prot = list(query())
-    st.session_state.result_prot_list = result_prot
+            q1 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.name", operator = "equals", value = "")
+        
+        # Search for Proteins by Enzyme Classification Number
+        if attr_bool[1] == "Yes":
+            if comp_vals[1] == "exists":
+                q2 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.id", operator = "exists")
+            else:
+                value_list = [x.strip() for x in values[1].split(",")]
+                q2 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.id", operator = comp_vals[1], value = value_list)
+        else:
+            q2 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.id", operator = "equals", value = "")
+        
+        # Search for Proteins by Number of Chains
+        if attr_bool[2] == "Yes":
+            q3 = AttributeQuery(attribute = "rcsb_entry_info.polymer_entity_count_protein", operator = comp_vals[2], value = int(values[2]))
+        else:
+            q3 = AttributeQuery(attribute = "rcsb_entry_info.polymer_entity_count_protein", operator = "equals", value = 0)
+        
+        # Search for Proteins by Length of Sequence
+        if attr_bool[3] == "Yes":
+            q4 = AttributeQuery(attribute = "entity_poly.rcsb_sample_sequence_length", operator = comp_vals[3], value = int(values[3]))
+        else:
+            q4 = AttributeQuery(attribute = "entity_poly.rcsb_sample_sequence_length", operator = "equals", value = 0)
+        
+        # Search for Proteins by Molecular Weight
+        if attr_bool[4] == "Yes":
+            q5 = AttributeQuery(attribute = "rcsb_entry_info.molecular_weight", operator = comp_vals[4], value = float(values[4]))
+        else:
+            q5 = AttributeQuery(attribute = "rcsb_entry_info.molecular_weight", operator = "equals", value = 0)
+        
+        attr_list = [q1, q2, q3, q4, q5]
+        positives = [q0]
+        global query
+        for number, value in enumerate(attr_bool):
+            if value == "Yes":
+                positives.append(attr_list[number])
+        if len(positives) > 0:
+            if len(positives) == 1:
+                query = positives[0]
+            else:
+                current_len = 1
+                query = positives[0]
+                while current_len < len(positives):
+                    query = query & positives[current_len]
+                    current_len += 1
+        else:
+            print("Invalid.")
+        result_prot = list(query())
+        st.session_state.result_prot_list = result_prot
+    except:
+        # need to add personalized error message
+        pass
 
 # view proteins that meet criteria
 st.selectbox("Select protein to view", st.session_state.result_prot_list, key = "prot_of_interest")
