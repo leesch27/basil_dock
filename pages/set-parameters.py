@@ -9,7 +9,6 @@ import re
 import glob
 import subprocess
 import zipfile
-from pdb2pqr import run_pdb2pqr
 
 from Bio.PDB import PDBList
 import MDAnalysis as mda 
@@ -96,10 +95,8 @@ with st.form("enter_docking_parameters"):
                 pqr_file = f"data/PDB_files/{pdb_id}_protein.pqr"
                 output_file = f"data/PDB_files/{pdb_id}_protein_H.pdb"
                 try:
-                    if local:
-                        pqr = subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
-                    else:
-                        run_pdb2pqr(["--pdb-output", output_file, "--pH=7.4", input_file, pqr_file, "--whitespace", "--quiet"])
+                    pqr = subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
+
                     to_pdbqt = mda.Universe(pqr_file)
                     to_pdbqt.atoms.write(f"data/PDBQT_files/{pdb_id}_protein.pdbqt")
 
