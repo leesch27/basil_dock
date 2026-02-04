@@ -63,7 +63,7 @@ with st.container(border=True):
     row2 = st.columns([2,1,2])
     selected_lig = row2[0].write("Search for Proteins by Enzyme Classification Number")
     selected_pocket = row2[1].selectbox("Select Operator", ["is any of", "is not empty"], key = "class_number_operator")
-    selected_pose = row2[2].selectbox("Search by Enzyme Classification Number?", enzyme_class_numbers, accept_new_options=False, key="class_number")
+    selected_pose = row2[2].selectbox("Search by Enzyme Classification Number?", enzyme_class_numbers, accept_new_options=True, key="class_number")
 
     row3 = st.columns([2,1,2])
     selected_lig = row3[0].write("Search for Proteins by Number of Chains")
