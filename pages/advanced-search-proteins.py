@@ -3,6 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import sys, os
 import glob
+import pandas as pd
 
 from Bio.PDB import PDBList
 from rcsbapi.search import AttributeQuery, Attr, TextQuery
@@ -45,17 +46,24 @@ title[1].title("Advanced Receptor Search using RCSB PDB")
 # define advanced search attributes
 comp_operators = ["==", ">", ">=", "<", "<="]
 
+# get classification names and numbers
+enzyme_class_df = pd.read_csv("data/enzyme_classification.csv")
+enzyme_class_numbers = ["No Selection"] + enzyme_class_df.iloc[:, 0].tolist()
+enzyme_class_names = ["No Selection"] + enzyme_class_df.iloc[:, 1].tolist()
+
+#print(enzyme_class_names[:5]) TEST TEST
+
 st.write("Select attributes to search for protein receptors in the RCSB PDB database. At least one attribute must be selected to perform a search.")
 with st.container(border=True):
     row1 = st.columns([2,1,2])
     selected_lig = row1[0].write("Search for Proteins by Enzyme Classification Name")
     selected_pocket = row1[1].selectbox("Select Operator", ["is", "is not empty"], key = "class_name_operator")
-    selected_pose = row1[2].text_input(label="Search by Enzyme Classification Name?", placeholder='Type Enzyme Classification Name', label_visibility = "hidden", key="class_name")
+    selected_pose = row1[2].selectbox("Search by Enzyme Classification Name?", enzyme_class_names, accept_new_options=False, key="class_name")
 
     row2 = st.columns([2,1,2])
     selected_lig = row2[0].write("Search for Proteins by Enzyme Classification Number")
     selected_pocket = row2[1].selectbox("Select Operator", ["is any of", "is not empty"], key = "class_number_operator")
-    selected_pose = row2[2].text_input(label="Search by Enzyme Classification Number?", placeholder='Type Enzyme Classification Number', label_visibility = "hidden", key="class_number")
+    selected_pose = row2[2].selectbox("Search by Enzyme Classification Number?", enzyme_class_numbers, accept_new_options=True, key="class_number")
 
     row3 = st.columns([2,1,2])
     selected_lig = row3[0].write("Search for Proteins by Number of Chains")
@@ -118,8 +126,7 @@ if search:
         q0 = AttributeQuery(attribute = "rcsb_entry_info.selected_polymer_entity_types", operator = "exact_match", value = "Protein (only)")
         # Search for Proteins by Enzyme Classification Name
         # LEE NOTE TO LEE: appears to be controlled vocabulary. possible to make dropdown menu instead of text input?
-        # LOOK INTO THIS LATER
-        # mmcif/pdbx categories/items of interest: pdbx_entity_func_enzyme, pdbx_entity_name_taxonomy_tree, entity.pdbx_ec
+        # LEE UPDATE: using dropdown menu now with BRENDA database names for both ec name and number. need to make sure names/numbers match RCSB PDB database
         if attr_bool[0] == "Yes":
             if comp_vals[0] == "exists":
                 q1 = AttributeQuery(attribute = "rcsb_polymer_entity.rcsb_ec_lineage.name", operator = "exists")
