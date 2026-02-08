@@ -16,7 +16,6 @@ from MDAnalysis.coordinates import PDB
 from openbabel import pybel
 from rdkit import Chem
 from rdkit.Chem import Draw
-from vina import Vina
 import prolif as plf
 import py3Dmol
 from IPython.display import display
@@ -72,26 +71,48 @@ def view_ligands(ligand):
     components.html(view._make_html(), height = 500,width=500)
 
 def dock_vina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
-    # iterate through each pocket and dock for a given ligand
-    v = Vina(sf_name='vina')
-    v.set_receptor(f'data/PDBQT_files/{pdb_id}_protein.pdbqt')
-    ligand_short = ligand.split("/")[-1]
-    print(ligand_short) ## TEST TEST
-    
-    # LEE NOTE TO LEE: work on making _H identifying obsolete
+    vina_exe = "vina_1.2.7_win.exe"
+    if not os.path.isfile(vina_exe):
+        vina_exe = shutil.which("vina")
+        if vina_exe is None:
+            raise RuntimeError("Cannot find vina executable. Make sure vina.exe is in PATH or specify full path.")
+
+    ligand_short = os.path.basename(ligand)
     if "_H.pdbqt" in ligand_short:
         ligand_short2 = ligand_short.split("_H.pdbqt")[0]
     else:
         ligand_short2 = ligand_short.split(".pdbqt")[0]
-    
-    v.set_ligand_from_file(ligand)
+
+    receptor_file = f'data/PDBQT_files/{pdb_id}_protein.pdbqt'
+
     if len(pocket_center) == len(pocket_size):
-        for cav_num, id in enumerate(cavity):
-            v.compute_vina_maps(center = pocket_center[cav_num], box_size = pocket_size[cav_num])
-            v.dock(exhaustiveness=exhaust, n_poses=pose)
-            v.write_poses(f"data/vina_out/{ligand_short2}_vina_pocket_{id}.pdbqt", n_poses=pose, overwrite=True)
-            # write output to sdf
-            pdbqt_to_sdf(pdbqt_file=f"data/vina_out/{ligand_short2}_vina_pocket_{id}.pdbqt",output=f"data/vina_out_2/{ligand_short2}_pocket_{id}_vina_out_2.sdf")
+        for cav_num, pocket_id in enumerate(cavity):
+            center = pocket_center[cav_num]
+            size = pocket_size[cav_num]
+            out_file = f"data/vina_out/{ligand_short2}_vina_pocket_{pocket_id}.pdbqt"
+
+            cmd = [
+                vina_exe,
+                "--receptor", receptor_file,
+                "--ligand", ligand,
+                "--center_x", str(center[0]),
+                "--center_y", str(center[1]),
+                "--center_z", str(center[2]),
+                "--size_x", str(size[0]),
+                "--size_y", str(size[1]),
+                "--size_z", str(size[2]),
+                "--exhaustiveness", str(exhaust),
+                "--num_modes", str(pose),
+                "--out", out_file
+            ]
+
+            subprocess.run(cmd, check=True)
+
+            # Convert output to SDF
+            pdbqt_to_sdf(
+                pdbqt_file=out_file,
+                output=f"data/vina_out_2/{ligand_short2}_pocket_{pocket_id}_vina_out_2.sdf"
+            )
 
 def dock_smina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
     # iterate through each pocket and dock for a given ligand
