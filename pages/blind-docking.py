@@ -1,3 +1,5 @@
+import time
+
 import streamlit as st
 import streamlit.components.v1 as components
 import sys, os
@@ -19,6 +21,11 @@ from rdkit.Chem import Draw
 import prolif as plf
 import py3Dmol
 from IPython.display import display
+windows_os = False
+try:
+    from vina import Vina
+except:
+    windows_os = True
 
 #filter warnings
 import warnings
@@ -71,48 +78,60 @@ def view_ligands(ligand):
     components.html(view._make_html(), height = 500,width=500)
 
 def dock_vina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
-    vina_exe = "vina_1.2.7_win.exe"
-    if not os.path.isfile(vina_exe):
-        vina_exe = shutil.which("vina")
-        if vina_exe is None:
-            raise RuntimeError("Cannot find vina executable. Make sure vina.exe is in PATH or specify full path.")
-
-    ligand_short = os.path.basename(ligand)
+    if windows_os:
+        vina_exe = "vina_1.2.7_win.exe"
+        ligand_short = os.path.basename(ligand)
+    else:
+        # iterate through each pocket and dock for a given ligand
+        v = Vina(sf_name='vina')
+        v.set_receptor(f'data/PDBQT_files/{pdb_id}_protein.pdbqt')
+        ligand_short = ligand.split("/")[-1]
+        
+        # LEE NOTE TO LEE: work on making _H identifying obsolete
     if "_H.pdbqt" in ligand_short:
         ligand_short2 = ligand_short.split("_H.pdbqt")[0]
     else:
         ligand_short2 = ligand_short.split(".pdbqt")[0]
 
-    receptor_file = f'data/PDBQT_files/{pdb_id}_protein.pdbqt'
+    if windows_os:
+        receptor_file = f'data/PDBQT_files/{pdb_id}_protein.pdbqt'
+    else:
+        v.set_ligand_from_file(ligand)
 
     if len(pocket_center) == len(pocket_size):
-        for cav_num, pocket_id in enumerate(cavity):
-            center = pocket_center[cav_num]
-            size = pocket_size[cav_num]
-            out_file = f"data/vina_out/{ligand_short2}_vina_pocket_{pocket_id}.pdbqt"
+        if windows_os:
+            for cav_num, pocket_id in enumerate(cavity):
+                center = pocket_center[cav_num]
+                size = pocket_size[cav_num]
+                out_file = f"data/vina_out/{ligand_short2}_vina_pocket_{pocket_id}.pdbqt"
 
-            cmd = [
-                vina_exe,
-                "--receptor", receptor_file,
-                "--ligand", ligand,
-                "--center_x", str(center[0]),
-                "--center_y", str(center[1]),
-                "--center_z", str(center[2]),
-                "--size_x", str(size[0]),
-                "--size_y", str(size[1]),
-                "--size_z", str(size[2]),
-                "--exhaustiveness", str(exhaust),
-                "--num_modes", str(pose),
-                "--out", out_file
-            ]
+                cmd = [
+                    vina_exe,
+                    "--receptor", receptor_file,
+                    "--ligand", ligand,
+                    "--center_x", str(center[0]),
+                    "--center_y", str(center[1]),
+                    "--center_z", str(center[2]),
+                    "--size_x", str(size[0]),
+                    "--size_y", str(size[1]),
+                    "--size_z", str(size[2]),
+                    "--exhaustiveness", str(exhaust),
+                    "--num_modes", str(pose),
+                    "--out", out_file
+                ]
 
-            subprocess.run(cmd, check=True)
+                subprocess.run(cmd, check=True)
 
-            # Convert output to SDF
-            pdbqt_to_sdf(
-                pdbqt_file=out_file,
-                output=f"data/vina_out_2/{ligand_short2}_pocket_{pocket_id}_vina_out_2.sdf"
-            )
+                # Convert output to SDF
+                pdbqt_to_sdf(pdbqt_file=out_file, output=f"data/vina_out_2/{ligand_short2}_pocket_{pocket_id}_vina_out_2.sdf")
+        else:
+            for cav_num, id in enumerate(cavity):
+                v.compute_vina_maps(center = pocket_center[cav_num], box_size = pocket_size[cav_num])
+                v.dock(exhaustiveness=exhaust, n_poses=pose)
+
+            v.write_poses(f"data/vina_out/{ligand_short2}_vina_pocket_{id}.pdbqt", n_poses=pose, overwrite=True)
+            # write output to sdf
+            pdbqt_to_sdf(pdbqt_file=f"data/vina_out/{ligand_short2}_vina_pocket_{id}.pdbqt",output=f"data/vina_out_2/{ligand_short2}_pocket_{id}_vina_out_2.sdf")
 
 def dock_smina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
     # iterate through each pocket and dock for a given ligand
@@ -171,19 +190,51 @@ title[0].image("img/logo.png", width=200)
 title[1].title("Blind Docking Parameters")
 
 st.write("Review and set parameters for blind docking")
+
 with st.status("Running fpocket on the protein, searching for binding pockets...") as status:
-    # run fpocket to find potential binding pockets on protein
     try:
-        with open(f"data/pocket_descriptors_{pdb_id}.csv", "w+") as out_file:
-            if local:
-                fpocket = subprocess.run(["fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
+        output_file = f"data/pocket_descriptors_{pdb_id}.csv"
+        pdb_file = f"data/PDB_files/{pdb_id}_protein.pdb"
+
+        # Try to use docker (for Windows)
+        try:
+            status.update(label="Trying fpocket via Docker...")
+
+            # Install docker image (will take longer on first run) - will fail if docker desktop is not running
+            subprocess.run(["docker", "--version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["docker", "pull", "fpocket/fpocket"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+            data_path = os.path.abspath("data").replace("\\", "/")
+
+            with open(output_file, "w") as out_file:
+                subprocess.run(["docker", "run", "--rm", "-v", f"{data_path}:/data", "fpocket/fpocket", "fpocket", "-f", f"/data/PDB_files/{pdb_id}_protein.pdb", "-d"], stdout=out_file, stderr=subprocess.STDOUT, check=True)
+
+            status.update(label="fpocket completed via Docker")
+
+        # If docker not available, use default FPocket method (for Linux & Mac)
+        except subprocess.CalledProcessError:
+            if windows_os:
+                status.update(label="docker fpocket failed")
+                st.error("fpocket requires Docker on windows. Native fpocket is not available.")
+                st.stop()
             else:
-                fpocket = subprocess.run([f"/home/adminuser/.conda/bin/fpocket", "-f", f"data/PDB_files/{pdb_id}_protein.pdb", "-d"], text= True, check=True, stdout=out_file)
-            status.update(label="fpocket run completed!")
-    except subprocess.CalledProcessError as fpocket:
-        print(fpocket.stderr, end="")
+                status.update(label="Docker failed, falling back to native fpocket...")
+
+                with open(output_file, "w+") as out_file:
+                    if local:
+                        subprocess.run(["fpocket", "-f", pdb_file, "-d"], text=True, check=True, stdout=out_file)
+                    else:
+                        subprocess.run(["/home/adminuser/.conda/bin/fpocket", "-f", pdb_file, "-d"], text=True, check=True, stdout=out_file)
+
+                status.update(label="fpocket completed via native binary")
+
+    except subprocess.CalledProcessError as e:
+        print(e.stderr, end="")
         status.update(label="fpocket run failed! Please check log file for details.")
 
+if not os.path.exists(output_file):
+    st.error("fpocket did not produce an output file.")
+    st.stop()
 
 prot_pockets = pd.read_csv(f'data/pocket_descriptors_{pdb_id}.csv',sep=' ',index_col=[0])
 get_prot_pockets_data(current_dir, pdb_id, prot_pockets)
@@ -207,7 +258,7 @@ if st.button("Update Parameters"):
     pocketPath = os.path.join(current_dir, "data", "PDB_files", str(pdb_id) + "_protein_out", "*.pqr")
     pocketFiles = glob.glob(pocketPath)
     for file in pocketFiles:
-        split_1 = file.split("/")[-1]
+        split_1 = os.path.basename(file)
         split_2 = split_1.split("_")[0]
         index_num = re.findall(r'\d+', split_2)
         index_num2 = ''.join(str(x) for x in index_num)
@@ -290,6 +341,7 @@ if st.button("Dock!"):
         engine_name = docking_engine.lower()
         prot_mol = Chem.MolFromPDBFile(f"data/PDB_files/{pdb_id}_protein_H.pdb")
         protein_plf = plf.Molecule.from_rdkit(prot_mol)
+
         st.write(f"Obtaining interaction fingerprints...")
         all_df, all_ifps, all_ligand_plf, ligand_plf_descriptors = get_ifps("Blind docking", engine_name, ligs, protein_plf, pockets)
         st.write(f"Sorting through scores...")
