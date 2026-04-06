@@ -212,7 +212,7 @@ with st.status("Running fpocket on the protein, searching for binding pockets...
             status.update(label="fpocket completed via Docker")
 
         # If docker not available, use default FPocket method (for Linux & Mac)
-        except subprocess.CalledProcessError:
+        except:
             if windows_os:
                 status.update(label="docker fpocket failed")
                 st.error("fpocket requires Docker on windows. Native fpocket is not available.")
