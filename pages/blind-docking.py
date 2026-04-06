@@ -339,7 +339,21 @@ if st.button("Dock!"):
     # save results to dataframe
     with st.status("Interpreting docking results...") as status_results:
         engine_name = docking_engine.lower()
-        prot_mol = Chem.MolFromPDBFile(f"data/PDB_files/{pdb_id}_protein_H.pdb")
+
+        prot_mol = Chem.MolFromPDBFile(
+            f"data/PDB_files/{pdb_id}_protein_H.pdb",
+            removeHs=False,
+            sanitize=False
+        )
+
+        if prot_mol is None:
+            raise ValueError(f"RDKit failed to parse PDB file for {pdb_id}. Check for insertion codes or non-standard residues.")
+
+        try:
+            Chem.SanitizeMol(prot_mol)
+        except Exception as e:
+            print(f"Sanitization warning: {e}")
+
         protein_plf = plf.Molecule.from_rdkit(prot_mol)
 
         st.write(f"Obtaining interaction fingerprints...")
