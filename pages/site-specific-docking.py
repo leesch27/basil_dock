@@ -16,9 +16,13 @@ from MDAnalysis.coordinates import PDB
 from openbabel import pybel
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdCoordGen
-from vina import Vina
 import prolif as plf
 import py3Dmol
+windows_os = False
+try:
+    from vina import Vina
+except:
+    windows_os = True
 
 #filter warnings
 import warnings
@@ -63,24 +67,56 @@ def view_ligands(ligand):
     components.html(view._make_html(), height = 500,width=1000)
 
 def dock_vina(pdb_id, ligand, centers, sizes, exhaust, pose):
-    # iterate through each pocket and dock for a given ligand
-    v = Vina(sf_name='vina')
-    v.set_receptor(f'{current_dir}/data/PDBQT_files/{pdb_id}_protein.pdbqt')
-    ligand_short = ligand.split("/")[-1]
-    print(ligand_short) ## TEST TEST
+    if windows_os:
+        vina_exe = "vina_1.2.7_win.exe"
+        ligand_short = os.path.basename(ligand)
+    else:
+        # iterate through each pocket and dock for a given ligand
+        v = Vina(sf_name='vina')
+        v.set_receptor(f'data/PDBQT_files/{pdb_id}_protein.pdbqt')
+        ligand_short = ligand.split("/")[-1]
+        print(ligand_short) ## TEST TEST
     
-    # LEE NOTE TO LEE: work on making _H identifying obsolete
+        # LEE NOTE TO LEE: work on making _H identifying obsolete
     if "_H.pdbqt" in ligand_short:
         ligand_short2 = ligand_short.split("_H.pdbqt")[0]
     else:
         ligand_short2 = ligand_short.split(".pdbqt")[0]
 
-    v.set_ligand_from_file(ligand)
-    v.compute_vina_maps(center = centers, box_size = sizes)
-    v.dock(exhaustiveness=exhaust, n_poses=pose)
-    v.write_poses(f"{current_dir}/data/vina_out/{ligand_short2}.pdbqt", n_poses=pose, overwrite=True)
-    # write output to sdf
-    pdbqt_to_sdf(pdbqt_file=f"data/vina_out/{ligand_short2}.pdbqt",output=f"data/vina_out_2/{ligand_short2}_vina_out_2.sdf")
+    if windows_os:
+        receptor_file = f'data/PDBQT_files/{pdb_id}_protein.pdbqt'
+    else:
+        v.set_ligand_from_file(ligand)
+
+    if windows_os:
+        out_file = f"data/vina_out/{ligand_short2}.pdbqt"
+        ligand_file = ligand if ligand.endswith(".pdbqt") else f"data/PDBQT_files/{ligand}.pdbqt"
+
+        cmd = [
+            vina_exe,
+            "--receptor", receptor_file,
+            "--ligand", ligand_file,
+            "--center_x", str(centers[0]),
+            "--center_y", str(centers[1]),
+            "--center_z", str(centers[2]),
+            "--size_x", str(sizes[0]),
+            "--size_y", str(sizes[1]),
+            "--size_z", str(sizes[2]),
+            "--exhaustiveness", str(exhaust),
+            "--num_modes", str(pose),
+            "--out", out_file
+        ]
+
+        subprocess.run(cmd, check=True)
+        # write output to sdf
+        pdbqt_to_sdf(pdbqt_file=out_file, output=f"data/vina_out_2/{ligand_short2}_vina_out_2.sdf")
+
+    else:
+        v.compute_vina_maps(center = centers, box_size = sizes)
+        v.dock(exhaustiveness=exhaust, n_poses=pose)
+        v.write_poses(f"{current_dir}/data/vina_out/{ligand_short2}.pdbqt", n_poses=pose, overwrite=True)
+        # write output to sdf
+        pdbqt_to_sdf(pdbqt_file=f"data/vina_out/{ligand_short2}.pdbqt",output=f"data/vina_out_2/{ligand_short2}_vina_out_2.sdf")
 
 def dock_smina(pdb_id, ligand, centers, sizes, exhaust, pose):
     # iterate through each pocket and dock for a given ligand
