@@ -96,10 +96,13 @@ with st.form("enter_docking_parameters"):
                 output_file = f"data/PDB_files/{pdb_id}_protein_H.pdb"
                 try:
                     if local:
-                        subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
+                        with open(pqr_file, "w") as outfile:
+                            subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
                     else:
-                        subprocess.run(["/home/adminuser/.conda/bin/fpocket", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
+                        with open(pqr_file, "w") as outfile:
+                            subprocess.run(["/home/adminuser/.conda/bin/fpocket", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
 
+                    print(pqr_file)
                     to_pdbqt = mda.Universe(pqr_file)
                     to_pdbqt.atoms.write(f"data/PDBQT_files/{pdb_id}_protein.pdbqt")
 
