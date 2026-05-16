@@ -102,7 +102,11 @@ with st.form("enter_docking_parameters"):
                         with open(pqr_file, "w") as outfile:
                             subprocess.run(["/home/adminuser/.conda/bin/fpocket", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
 
-                    print(pqr_file)
+                    with open(pqr_file, "r") as outfile:
+                        data = outfile.readlines()
+                        for linenum, line in enumerate(data):
+                            print(line)
+
                     to_pdbqt = mda.Universe(pqr_file)
                     to_pdbqt.atoms.write(f"data/PDBQT_files/{pdb_id}_protein.pdbqt")
 
