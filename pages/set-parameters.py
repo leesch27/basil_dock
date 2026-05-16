@@ -100,7 +100,7 @@ with st.form("enter_docking_parameters"):
                             subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
                     else:
                         with open(pqr_file, "w") as outfile:
-                            subprocess.run(["/home/adminuser/.conda/bin/fpocket", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
+                            subprocess.run(["/home/adminuser/.conda/bin/fpocket", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], stdout=pqr_file, check=True, capture_output = True, text = True)
 
                     with open(pqr_file, "r") as outfile:
                         data = outfile.readlines()
