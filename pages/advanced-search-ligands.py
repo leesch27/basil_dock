@@ -6,7 +6,12 @@ import glob
 import py3Dmol
 import requests
 from openbabel import pybel
-from rcsbapi.search import AttributeQuery, Attr, TextQuery, ChemSimilarityQuery
+try:
+    from rcsbapi.search import AttributeQuery, Attr, TextQuery, ChemSimilarityQuery
+    internet = True
+except:
+    internet = False
+
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdCoordGen
 
@@ -81,6 +86,10 @@ if 'result_lig_list' not in st.session_state:
 load_keys("local")
 local = st.session_state._local
 
+if internet is False:
+    st.error("Internet connection is required for this function.")
+    st.stop()
+    
 try:
     load_keys("current_dir")
     current_dir = st.session_state._current_dir

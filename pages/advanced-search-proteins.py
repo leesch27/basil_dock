@@ -6,7 +6,12 @@ import glob
 import pandas as pd
 
 from Bio.PDB import PDBList
-from rcsbapi.search import AttributeQuery, Attr, TextQuery
+
+try:
+    from rcsbapi.search import AttributeQuery, Attr, TextQuery
+    internet = True
+except:
+    internet = False
 
 import py3Dmol
 
@@ -32,6 +37,10 @@ if 'result_prot_list' not in st.session_state:
 load_keys("local")
 local = st.session_state._local
 
+if internet is False:
+    st.error("Internet connection is required for this function.")
+    st.stop()
+    
 try:
     load_keys("current_dir")
     current_dir = st.session_state._current_dir
