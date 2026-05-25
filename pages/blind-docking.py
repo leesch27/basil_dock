@@ -165,7 +165,7 @@ def dock_smina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose
                 else:
                     #with open(outfile, "w") as output:
                     cmd = [
-                        "/home/adminuser/.conda/bin/smina smina",
+                        "/home/adminuser/.conda/bin/smina",
                         "-r", rec,
                         "-l", lig,
                         "-o", outfile,
