@@ -1,15 +1,10 @@
 import streamlit as st
 from io import StringIO, BytesIO
 import sys, os
-import numpy as np
 import pandas as pd
-import numbers
-import re
-import glob
 import subprocess
 import zipfile
 
-from Bio.PDB import PDBList
 import MDAnalysis as mda 
 from MDAnalysis.coordinates import PDB
 from openbabel import pybel

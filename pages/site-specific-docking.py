@@ -1,20 +1,11 @@
 import streamlit as st
-from io import StringIO, BytesIO
+from io import BytesIO
 import sys, os
-import numpy as np
 import pandas as pd
-import numbers
-import re
-import glob
 import subprocess
 import zipfile
 
-from Bio.PDB import PDBList
-import MDAnalysis as mda 
-from MDAnalysis.coordinates import PDB
-from openbabel import pybel
 from rdkit import Chem
-from rdkit.Chem import AllChem, rdCoordGen
 import prolif as plf
 import py3Dmol
 windows_os = False

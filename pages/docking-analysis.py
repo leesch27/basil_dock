@@ -1,18 +1,8 @@
 import streamlit as st
 import sys, os
-import numpy as np
 import pandas as pd
-import numbers
-import re
-import glob
-import subprocess
 
-from Bio.PDB import PDBList
-import MDAnalysis as mda 
-from MDAnalysis.coordinates import PDB
-from openbabel import pybel
 from rdkit import Chem
-from rdkit.Chem import Draw
 import py3Dmol
 import prolif as plf
 from prolif.plotting.complex3d import Complex3D
@@ -51,28 +41,28 @@ def docking_data_comparison(select_type, pose_mode, pdb_id, ligand_number, selec
             view.addModel(open(f"data/MOL2_files/{ligand_number}_H.mol2",'r').read(),format='mol2')
             ref_m = view.getModel()
             ref_m.setStyle({},{'stick':{'colorscheme':'magentaCarbon','radius':0.2}})
-            print('Reference (' + str(ligand_number) + '): Magenta ')
+            st.write('Reference (' + str(ligand_number) + '): Magenta ')
         else:
             selected_ref = Chem.SDMolSupplier(f"data/{select_dock}_out_2/{ligand_number}_pocket_{pocket_selection_list[1]}_{select_dock}_out_2.sdf")
             p_ref=Chem.MolToMolBlock(selected_ref[pose_selection_list[1]],False)
             view.addModel(p_ref,'reference mol')
             x_ref = view.getModel()
             x_ref.setStyle({},{'stick':{'colorscheme':'magentaCarbon','radius':0.2}})
-            print('Reference (' + str(ligand_number) + '): Magenta ')
+            st.write('Reference (' + str(ligand_number) + '): Magenta ')
             if select_dock == 'smina':
-                print('Score: {}'.format(selected_ref[pose_selection_list[1]].GetProp('minimizedAffinity')))
+                st.write('Score: {}'.format(selected_ref[pose_selection_list[1]].GetProp('minimizedAffinity')))
             else:
-                print('Pose: {} | Score: {}'.format(selected_ref[pose_selection_list[1]].GetProp('Pose'), selected_ref[pose_selection_list[1]].GetProp('Score')))
+                st.write('Pose: {} | Score: {}'.format(selected_ref[pose_selection_list[1]].GetProp('Pose'), selected_ref[pose_selection_list[1]].GetProp('Score')))
     
         # add experimental docking data of a desired pose in a pocket to py3dmol viewer
         selected = Chem.SDMolSupplier(f"data/{select_dock}_out_2/{ligand_number}_pocket_{pocket_selection_list[0]}_{select_dock}_out_2.sdf")
         p=Chem.MolToMolBlock(selected[pose_selection_list[0]],False)
         if select_dock == 'smina':
-            print('Smina Pose (' + str(ligand_number) + '): Cyan')
-            print('Score: {}'.format(selected[pose_selection_list[0]].GetProp('minimizedAffinity')))
+            st.write('Smina Pose (' + str(ligand_number) + '): Cyan')
+            st.write('Score: {}'.format(selected[pose_selection_list[0]].GetProp('minimizedAffinity')))
         else:
-            print('Vina Pose (' + str(ligand_number) + '): Cyan')
-            print('Pose: {} | Score: {}'.format(selected[pose_selection_list[0]].GetProp('Pose'), selected[pose_selection_list[0]].GetProp('Score')))
+            st.write('Vina Pose (' + str(ligand_number) + '): Cyan')
+            st.write('Pose: {} | Score: {}'.format(selected[pose_selection_list[0]].GetProp('Pose'), selected[pose_selection_list[0]].GetProp('Score')))
         view.addModel(p,'mol')
         x = view.getModel()
         x.setStyle({},{'stick':{'colorscheme':'cyanCarbon','radius':0.2}})
@@ -98,28 +88,28 @@ def docking_data_comparison(select_type, pose_mode, pdb_id, ligand_number, selec
             view.addModel(open(f"data/MOL2_files/{ligand_number}_H.mol2",'r').read(),format='mol2')
             ref_m = view.getModel()
             ref_m.setStyle({},{'stick':{'colorscheme':'magentaCarbon','radius':0.2}})
-            print('Reference (' + str(ligand_number) + '): Magenta ')
+            st.write('Reference (' + str(ligand_number) + '): Magenta ')
         else:
             selected_ref = Chem.SDMolSupplier(f"data/{select_dock}_out_2/{ligand_number}_{select_dock}_out_2.sdf")
             p_ref=Chem.MolToMolBlock(selected_ref[pose_selection_list[1]],False)
             view.addModel(p_ref,'reference mol')
             x_ref = view.getModel()
             x_ref.setStyle({},{'stick':{'colorscheme':'magentaCarbon','radius':0.2}})
-            print('Reference (' + str(ligand_number) + '): Magenta ')
+            st.write('Reference (' + str(ligand_number) + '): Magenta ')
             if select_dock == 'smina':
-                print('Score: {}'.format(selected_ref[pose_selection_list[1]].GetProp('minimizedAffinity')))
+                st.write('Score: {}'.format(selected_ref[pose_selection_list[1]].GetProp('minimizedAffinity')))
             else:
-                print('Pose: {} | Score: {}'.format(selected_ref[pose_selection_list[1]].GetProp('Pose'), selected_ref[pose_selection_list[1]].GetProp('Score')))
+                st.write('Pose: {} | Score: {}'.format(selected_ref[pose_selection_list[1]].GetProp('Pose'), selected_ref[pose_selection_list[1]].GetProp('Score')))
     
         # add experimental docking data of a desired pose in a pocket to py3dmol viewer
         selected = Chem.SDMolSupplier(f"data/{select_dock}_out_2/{ligand_number}_{select_dock}_out_2.sdf")
         p=Chem.MolToMolBlock(selected[pose_selection_list[0]],False)
         if select_dock == 'smina':
-            print('Smina Pose (' + str(ligand_number) + '): Cyan')
-            print ('Score: {}'.format(selected[pose_selection_list[0]].GetProp('minimizedAffinity')))
+            st.write('Smina Pose (' + str(ligand_number) + '): Cyan')
+            st.write('Score: {}'.format(selected[pose_selection_list[0]].GetProp('minimizedAffinity')))
         else:
-            print('Vina Pose (' + str(ligand_number) + '): Cyan')
-            print ('Pose: {} | Score: {}'.format(selected[pose_selection_list[0]].GetProp('Pose'), selected[pose_selection_list[0]].GetProp('Score')))
+            st.write('Vina Pose (' + str(ligand_number) + '): Cyan')
+            st.write('Pose: {} | Score: {}'.format(selected[pose_selection_list[0]].GetProp('Pose'), selected[pose_selection_list[0]].GetProp('Score')))
         view.addModel(p,'mol')
         x = view.getModel()
         x.setStyle({},{'stick':{'colorscheme':'cyanCarbon','radius':0.2}})
@@ -334,7 +324,7 @@ if data_retrieval is not None:
                     else:
                         st.write(f"Predicted orally bioactive value for {key}: No")
                 st.write("Feature importances for oral bioavailability classification using " + bioactive_method + " method")
-                status_classification.update(label="Analysis completed!")
+                status_classification.update(label="Analysis completed! Expand status to view predicted oral bioavailability values for each ligand.")
         else:
             bioactive_importances = None
             st.write("Please select a method for analysis.")
