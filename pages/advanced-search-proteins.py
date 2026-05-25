@@ -29,7 +29,7 @@ def view_prot(prot):
     Prot.setStyle({'cartoon':{'arrows':True, 'tubes':True, 'style':'oval', 'color':'white'}})
     view.zoomTo()
     view.show()
-    st.html(view._make_html(), height = 500,width=500)
+    st.iframe(view._make_html(), height = 500,width=500)
 
 if 'result_prot_list' not in st.session_state:
     st.session_state.result_prot_list = []

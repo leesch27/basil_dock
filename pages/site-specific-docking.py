@@ -52,7 +52,7 @@ def create_viewer(pdb_id, center, size):
     # create box to represent docking site
     viewer.addBox({"center": dict(x = center[0], y = center[1], z= center[2]), "dimensions": dict(d = abs(size[0]), h = abs(size[1]), w = abs(size[2])), "color" : "red", "opacity" : 0.5})
     viewer.zoomTo()
-    st.html(viewer._make_html(), height = 500,width=1000)
+    st.iframe(viewer._make_html(), height = 500,width=1000)
 
 def view_ligands(ligand):
     # view ligand in 3Dmol.js viewer prior to docking
@@ -64,7 +64,7 @@ def view_ligands(ligand):
     ref_m = view.getModel()
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
-    st.html(view._make_html(), height = 500,width=1000)
+    st.iframe(view._make_html(), height = 500,width=1000)
 
 def dock_vina(pdb_id, ligand, centers, sizes, exhaust, pose):
     if windows_os:

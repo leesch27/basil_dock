@@ -127,12 +127,12 @@ def docking_data_comparison(select_type, pose_mode, pdb_id, ligand_number, selec
         
     view.zoomTo()
     view.show()
-    st.html(view._make_html(), height = 500,width=1000)
+    st.iframe(view._make_html(), height = 500,width=1000)
 
 def create_plf_viewer(ifp, plf_ligand, plf_prot):
     # view docking box in 3Dmol.js viewer prior to docking
     comp = Complex3D(ifp, plf_ligand, plf_prot)
-    st.html(comp.display()._make_html(), height = 500,width=1000)
+    st.iframe(comp.display()._make_html(), height = 500,width=1000)
 
 title = st.columns([0.25, 0.75])
 title[0].image("img/logo.png", width=200)

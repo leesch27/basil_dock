@@ -63,7 +63,7 @@ def create_viewer(pdb_id, revised_files):
         if a > 6:
             a = 0
     viewer.zoomTo()
-    st.html(viewer._make_html(), height = 500,width=1000)
+    st.iframe(viewer._make_html(), height = 500,width=1000)
 
 def view_ligands(ligand):
     # view ligand in 3Dmol.js viewer prior to docking
@@ -75,7 +75,7 @@ def view_ligands(ligand):
     ref_m = view.getModel()
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
-    st.html(view._make_html(), height = 500,width=500)
+    st.iframe(view._make_html(), height = 500,width=500)
 
 def dock_vina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
     if windows_os:
