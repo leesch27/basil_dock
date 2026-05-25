@@ -125,7 +125,22 @@ def dock_smina(pdb_id, ligand, centers, sizes, exhaust, pose):
     # run smina docking
     try:
         if local:
-            smina = subprocess.run(["smina", "-r", rec, "-l", lig, "-o", outfile, "--center_x", str(centers[0]), "--center_y", str(centers[1]), "--center_z", str(centers[2]), "--size_x", str(sizes[0]), "--size_y", str(sizes[1]), "--size_z", str(sizes[2]), "--exhaustiveness", str(exhaust), "--num_modes", str(pose)], text=True)
+            cmd = [
+                "smina",
+                "-r", rec,
+                "-l", lig,
+                "-o", outfile,
+                "--center_x", str(centers[0]),
+                "--center_y", str(centers[1]),
+                "--center_z", str(centers[2]),
+                "--size_x", str(sizes[0]),
+                "--size_y", str(sizes[1]),
+                "--size_z", str(sizes[2]),
+                "--exhaustiveness", str(exhaust),
+                "--num_modes", str(pose)
+                ]
+
+            subprocess.run(cmd, check=True)
         else:
             cmd = [
                 "/home/adminuser/.conda/bin/smina",
@@ -143,7 +158,6 @@ def dock_smina(pdb_id, ligand, centers, sizes, exhaust, pose):
                 ]
 
             subprocess.run(cmd, check=True)
-            #smina = subprocess.run([f"/home/adminuser/.conda/bin/smina", "smina", "-r", rec, "-l", lig, "-o", outfile, "--center_x", str(centers[0]), "--center_y", str(centers[1]), "--center_z", str(centers[2]), "--size_x", str(sizes[0]), "--size_y", str(sizes[1]), "--size_z", str(sizes[2]), "--exhaustiveness", str(exhaust), "--num_modes", str(pose)], text=True)
         mols = []
         # Rewrite sdf output files to add 3D tag
         with Chem.SDMolSupplier(f'{current_dir}/data/smina_out/{ligand}_smina_out.sdf') as suppl:

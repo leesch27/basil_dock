@@ -144,26 +144,23 @@ def dock_smina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose
             # run smina docking
             try:
                 if local:
-                    with open(outfile, "w") as output:
-                        cmd = [
-                            "smina",
-                            "-r", rec,
-                            "-l", lig,
-                            "-o", outfile,
-                            "--center_x", str(pocket_center_cavity[0]),
-                            "--center_y", str(pocket_center_cavity[1]),
-                            "--center_z", str(pocket_center_cavity[2]),
-                            "--size_x", str(pocket_size_cavity[0]),
-                            "--size_y", str(pocket_size_cavity[1]),
-                            "--size_z", str(pocket_size_cavity[2]),
-                            "--exhaustiveness", str(exhaust),
-                            "--num_modes", str(pose)
-                            ]
+                    cmd = [
+                        "smina",
+                        "-r", rec,
+                        "-l", lig,
+                        "-o", outfile,
+                        "--center_x", str(pocket_center_cavity[0]),
+                        "--center_y", str(pocket_center_cavity[1]),
+                        "--center_z", str(pocket_center_cavity[2]),
+                        "--size_x", str(pocket_size_cavity[0]),
+                        "--size_y", str(pocket_size_cavity[1]),
+                        "--size_z", str(pocket_size_cavity[2]),
+                        "--exhaustiveness", str(exhaust),
+                        "--num_modes", str(pose)
+                        ]
 
-                        subprocess.run(cmd, check=True)
-                        #smina = subprocess.run(["smina", "-r", rec, "-l", lig, "-o", outfile, "--center_x", str(pocket_center_cavity[0]), "--center_y", str(pocket_center_cavity[1]), "--center_z", str(pocket_center_cavity[2]), "--size_x", str(pocket_size_cavity[0]), "--size_y", str(pocket_size_cavity[1]), "--size_z", str(pocket_size_cavity[2]), "--exhaustiveness", str(exhaust), "--num_modes", str(pose)], text=True)
+                    subprocess.run(cmd, check=True)
                 else:
-                    #with open(outfile, "w") as output:
                     cmd = [
                         "/home/adminuser/.conda/bin/smina",
                         "-r", rec,
@@ -180,11 +177,6 @@ def dock_smina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose
                         ]
 
                     subprocess.run(cmd, check=True)
-                        #smina = subprocess.run([f"/home/adminuser/.conda/bin/smina", "smina", "-r", rec, "-l", lig, "-o", outfile, "--center_x", str(pocket_center_cavity[0]), "--center_y", str(pocket_center_cavity[1]), "--center_z", str(pocket_center_cavity[2]), "--size_x", str(pocket_size_cavity[0]), "--size_y", str(pocket_size_cavity[1]), "--size_z", str(pocket_size_cavity[2]), "--exhaustiveness", str(exhaust), "--num_modes", str(pose)], text=True)
-                
-                with open(outfile, "r") as pdb_file: #TEST TEST
-                    for line in pdb_file.readlines():
-                        print(line)
 
                 mols = []
                 # Rewrite sdf output files to add 3D tag

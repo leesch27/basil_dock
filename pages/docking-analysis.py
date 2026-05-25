@@ -126,12 +126,12 @@ def docking_data_comparison(select_type, pose_mode, pdb_id, ligand_number, selec
         
     view.zoomTo()
     view.show()
-    st.iframe(view._make_html(), height = 500,width=1000)
+    st.iframe(view._make_html())
 
 def create_plf_viewer(ifp, plf_ligand, plf_prot):
     # view docking box in 3Dmol.js viewer prior to docking
     comp = Complex3D(ifp, plf_ligand, plf_prot)
-    st.iframe(comp.display()._make_html(), height = 500,width=1000)
+    st.iframe(comp.display()._make_html())
 
 title = st.columns([0.25, 0.75])
 title[0].image("img/logo.png", width=200)
@@ -278,7 +278,7 @@ if data_retrieval is not None:
 
     if st.button("View Interactions"):
         # find way to get ifps
-        prot_mol = Chem.MolFromPDBFile(f"data/PDB_files/{pdb_id}_protein_H.pdb")
+        prot_mol = Chem.MolFromPDBFile(f"data/PDB_files/{pdb_id}_protein_H.pdb", sanitize=False)
         protein_plf = plf.Molecule.from_rdkit(prot_mol)
         if st.session_state.select_type == "Blind docking":
             lig_suppl = plf.sdf_supplier(f"data/{st.session_state.select_dock}_out_2/{st.session_state.selected_ligand_interaction}_pocket_{st.session_state.selected_pocket_interaction}_{st.session_state.select_dock}_out_2.sdf")
