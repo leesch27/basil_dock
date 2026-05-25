@@ -74,7 +74,7 @@ def view_ligands(ligand):
     ref_m = view.getModel()
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
-    st.iframe(view._make_html(), height = 500,width=500)
+    st.iframe(view._make_html(), height = 500,width=1000)
 
 def dock_vina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
     if windows_os:

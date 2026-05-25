@@ -248,6 +248,9 @@ def expand_df(all_ifps, df, df2, largest_array_column):
 
 def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
     total_counter = 0
+    #TRST TEST
+    print(df2.columns)
+    print(df2.dtypes)
     for number, key in enumerate(all_ifps):
         for key_new in key:
             for key_2 in key[key_new]:
@@ -296,7 +299,7 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
                 while counter_ind < number_of_ints:
                     df2.at[number, (lig_name, res_name, f"Functional group involved ({key_2}){counter_ind}")] = df_groups[counter_ind]
                     #df2.at[number, (lig_name, res_name, f"Residue type({key_2}){counter_ind}")] = df_residue[counter_ind]
-                    df2.astype({(lig_name, res_name, f"Distance ({key_2}){counter_ind}"): 'float'}, errors='ignore').dtypes
+                    #df2.astype({(lig_name, res_name, f"Distance ({key_2}){counter_ind}"): 'float'}, errors='ignore').dtypes
                     df2.at[number, (lig_name, res_name, f"Distance ({key_2}){counter_ind}")] = df_distance[counter_ind]
                     df2.at[number, (lig_name, res_name, f"Index 1 (Ligand) ({key_2}){counter_ind}")] = df_ind_1[counter_ind]
                     df2.at[number, (lig_name, res_name, f"Index 2 (Ligand) ({key_2}){counter_ind}")] = df_ind_2[counter_ind]
@@ -304,6 +307,7 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
                     df2.at[number, (lig_name, res_name, f"Index 4 (Protein) ({key_2}){counter_ind}")] = df_ind_4[counter_ind]
                     counter_ind += 1
                 total_counter += 1
+    print(df2.dtypes)
 
 def save_dataframe(df2, dock_engine, pdb_id, lig_value, csv_name = ""):
     col_names_prelim = df2.keys()

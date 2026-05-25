@@ -20,7 +20,7 @@ def view_ligands(ligand):
     ref_m = view.getModel()
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
-    st.iframe(view._make_html(), height = 500,width=500)
+    st.iframe(view._make_html(), height = 500,width=1000)
 
 load_keys("local")
 local = st.session_state._local
