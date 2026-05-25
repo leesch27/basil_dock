@@ -1,6 +1,5 @@
 #protein advanced search
 import streamlit as st
-import streamlit.components.v1 as components
 import sys, os
 import glob
 import pandas as pd

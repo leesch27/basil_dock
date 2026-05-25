@@ -251,7 +251,6 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
     for number, key in enumerate(all_ifps):
         for key_new in key:
             for key_2 in key[key_new]:
-                df2.astype({(lig_name, res_name, f"Distance ({key_2}){counter_ind}"): 'float'}, errors='ignore').dtypes
                 lig_name = str(key_new[0])
                 res_name = str(key_new[1])
                 column_name = (lig_name, res_name, key_2)
@@ -297,6 +296,7 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
                 while counter_ind < number_of_ints:
                     df2.at[number, (lig_name, res_name, f"Functional group involved ({key_2}){counter_ind}")] = df_groups[counter_ind]
                     #df2.at[number, (lig_name, res_name, f"Residue type({key_2}){counter_ind}")] = df_residue[counter_ind]
+                    df2.astype({(lig_name, res_name, f"Distance ({key_2}){counter_ind}"): 'float'}, errors='ignore').dtypes
                     df2.at[number, (lig_name, res_name, f"Distance ({key_2}){counter_ind}")] = df_distance[counter_ind]
                     df2.at[number, (lig_name, res_name, f"Index 1 (Ligand) ({key_2}){counter_ind}")] = df_ind_1[counter_ind]
                     df2.at[number, (lig_name, res_name, f"Index 2 (Ligand) ({key_2}){counter_ind}")] = df_ind_2[counter_ind]

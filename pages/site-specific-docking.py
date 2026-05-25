@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from io import StringIO, BytesIO
 import sys, os
 import numpy as np

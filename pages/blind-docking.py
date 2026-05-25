@@ -1,7 +1,6 @@
 import time
 
 import streamlit as st
-import streamlit.components.v1 as components
 import sys, os
 from io import StringIO, BytesIO
 import numpy as np
