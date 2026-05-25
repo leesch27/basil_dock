@@ -222,6 +222,8 @@ def expand_df(all_ifps, df, df2, largest_array_column):
     col_names_list = []
     residues = []
     interactions = []
+    s = pd.Series([0] * df.shape[0])
+    s_float = pd.Series([0.0] * df.shape[0])
     total_counter = 0
     for key in all_ifps:
         for key_new in key:
@@ -236,13 +238,13 @@ def expand_df(all_ifps, df, df2, largest_array_column):
                     number_of_ints = int(largest_array_column[column_name])
                     counter_ind = 0
                     while counter_ind < number_of_ints:
-                        df2[(lig_name, res_name, f"Functional group involved ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
+                        df2[(lig_name, res_name, f"Functional group involved ({key_2}){counter_ind}")] = s
                         #df2[(lig_name, res_name, f"Residue type({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
-                        df2[(lig_name, res_name, f"Distance ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
-                        df2[(lig_name, res_name, f"Index 1 (Ligand) ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
-                        df2[(lig_name, res_name, f"Index 2 (Ligand) ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
-                        df2[(lig_name, res_name, f"Index 3 (Protein) ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
-                        df2[(lig_name, res_name, f"Index 4 (Protein) ({key_2}){counter_ind}")] = pd.Series([0] * df.shape[0])
+                        df2[(lig_name, res_name, f"Distance ({key_2}){counter_ind}")] = s_float
+                        df2[(lig_name, res_name, f"Index 1 (Ligand) ({key_2}){counter_ind}")] = s
+                        df2[(lig_name, res_name, f"Index 2 (Ligand) ({key_2}){counter_ind}")] = s
+                        df2[(lig_name, res_name, f"Index 3 (Protein) ({key_2}){counter_ind}")] = s
+                        df2[(lig_name, res_name, f"Index 4 (Protein) ({key_2}){counter_ind}")] = s
                         counter_ind += 1
                 total_counter += 1
 
