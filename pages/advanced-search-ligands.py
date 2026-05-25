@@ -30,7 +30,7 @@ def view_ligands(ligand):
     ref_m = view.getModel()
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
-    components.html(view._make_html(), height = 500,width=500)
+    st.html(view._make_html(), height = 500,width=500)
 
 def get_lig_files(ligand):
     try: # try getting ligand as sdf file first

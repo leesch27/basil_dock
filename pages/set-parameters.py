@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from io import StringIO, BytesIO
 import sys, os
 import numpy as np
@@ -97,15 +96,10 @@ with st.form("enter_docking_parameters"):
                 try:
                     if local:
                         with open(pqr_file, "w") as outfile:
-                            subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
+                            subprocess.run(["pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, text = True)
                     else:
                         with open(pqr_file, "w") as outfile:
-                            subprocess.run(["/home/adminuser/.conda/bin/pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, capture_output = True, text = True)
-
-                    with open(pqr_file, "r") as outfile:
-                        data = outfile.readlines()
-                        for linenum, line in enumerate(data):
-                            print(line)
+                            subprocess.run(["/home/adminuser/.conda/bin/pdb2pqr", f"--pdb-output={output_file}", "--pH=7.4", "--whitespace", "--quiet", input_file, pqr_file], check=True, text = True)
 
                     to_pdbqt = mda.Universe(pqr_file)
                     to_pdbqt.atoms.write(f"data/PDBQT_files/{pdb_id}_protein.pdbqt")

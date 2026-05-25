@@ -251,6 +251,7 @@ def fill_df(df2, all_ifps, all_ligand_plf, largest_array_column):
     for number, key in enumerate(all_ifps):
         for key_new in key:
             for key_2 in key[key_new]:
+                df2.astype({(lig_name, res_name, f"Distance ({key_2}){counter_ind}"): 'float'}, errors='ignore').dtypes
                 lig_name = str(key_new[0])
                 res_name = str(key_new[1])
                 column_name = (lig_name, res_name, key_2)

@@ -63,7 +63,7 @@ def create_viewer(pdb_id, revised_files):
         if a > 6:
             a = 0
     viewer.zoomTo()
-    components.html(viewer._make_html(), height = 500,width=1000)
+    st.html(viewer._make_html(), height = 500,width=1000)
 
 def view_ligands(ligand):
     # view ligand in 3Dmol.js viewer prior to docking
@@ -75,7 +75,7 @@ def view_ligands(ligand):
     ref_m = view.getModel()
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
-    components.html(view._make_html(), height = 500,width=500)
+    st.html(view._make_html(), height = 500,width=500)
 
 def dock_vina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
     if windows_os:
@@ -348,11 +348,6 @@ if st.button("Dock!"):
 
         if prot_mol is None:
             raise ValueError(f"RDKit failed to parse PDB file for {pdb_id}. Check for insertion codes or non-standard residues.")
-
-        try:
-            Chem.SanitizeMol(prot_mol)
-        except Exception as e:
-            print(f"Sanitization warning: {e}")
 
         protein_plf = plf.Molecule.from_rdkit(prot_mol)
 
