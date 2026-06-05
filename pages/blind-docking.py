@@ -393,7 +393,11 @@ if st.button("Dock!"):
         # save csv
         save_dataframe(df, engine_name, pdb_id, ligs)
         st.write(f"Expanding dataframe...")
-        df2 = df[["Frame", "Score", "Ligand", "Pocket", "UNL1"]].copy()
+        print(df.head())
+        try:
+            df2 = df[["Frame", "Score", "Ligand", "Pocket", "UNL1"]].copy()
+        except KeyError as e:
+            df2 = df.copy()
         largest_array_column = get_largest_array_column(df, "Blind docking")
         expand_df(all_ifps, df, df2, largest_array_column)
         st.write(f"Filling expanded dataframe...")
