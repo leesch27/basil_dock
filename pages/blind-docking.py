@@ -122,6 +122,10 @@ def dock_vina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose)
             v.write_poses(f"data/vina_out/{ligand_short2}_vina_pocket_{id}.pdbqt", n_poses=pose, overwrite=True)
             # write output to sdf
             pdbqt_to_sdf(pdbqt_file=f"data/vina_out/{ligand_short2}_vina_pocket_{id}.pdbqt",output=f"data/vina_out_2/{ligand_short2}_pocket_{id}_vina_out_2.sdf")
+            with open(f"data/vina_out_2/{ligand_short2}_pocket_{id}_vina_out_2.sdf", "r") as sdf_file: #TEST TEST
+                sdf_content = sdf_file.readlines()
+                for line in sdf_content:
+                    print(line)
 
 def dock_smina(pdb_id, ligand, cavity, pocket_center, pocket_size, exhaust, pose):
     # iterate through each pocket and dock for a given ligand
@@ -393,11 +397,10 @@ if st.button("Dock!"):
         # save csv
         save_dataframe(df, engine_name, pdb_id, ligs)
         st.write(f"Expanding dataframe...")
-        print(df.head())
         try:
             df2 = df[["Frame", "Score", "Ligand", "Pocket", "UNL1"]].copy()
         except KeyError as e:
-            df2 = df.copy()
+            df2 = pd.read_csv(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{docking_engine}.csv')
         largest_array_column = get_largest_array_column(df, "Blind docking")
         expand_df(all_ifps, df, df2, largest_array_column)
         st.write(f"Filling expanded dataframe...")
