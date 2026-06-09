@@ -1,9 +1,11 @@
 import streamlit as st
-import sys, os
+import os
 import numpy as np
 import pandas as pd
-import numbers
-from ligandsplitter.basefunctions import create_folders
+try:
+    from ligandsplitter.basefunctions import create_folders
+except:
+    pass
 
 def save_keys(key):
     st.session_state[key] = st.session_state["_" + key]

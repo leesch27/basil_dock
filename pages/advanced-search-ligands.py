@@ -1,12 +1,16 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import sys, os
 import glob
 
 import py3Dmol
 import requests
 from openbabel import pybel
-from rcsbapi.search import AttributeQuery, Attr, TextQuery, ChemSimilarityQuery
+try:
+    from rcsbapi.search import AttributeQuery, Attr, TextQuery, ChemSimilarityQuery
+    internet = True
+except:
+    internet = False
+
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdCoordGen
 
@@ -25,7 +29,7 @@ def view_ligands(ligand):
     ref_m = view.getModel()
     ref_m.setStyle({},{'stick':{'colorscheme':'greenCarbon','radius':0.2}})
     view.zoomTo()
-    components.html(view._make_html(), height = 500,width=500)
+    st.iframe(view._make_html(), height = 500,width=1000)
 
 def get_lig_files(ligand):
     try: # try getting ligand as sdf file first
@@ -81,6 +85,10 @@ if 'result_lig_list' not in st.session_state:
 load_keys("local")
 local = st.session_state._local
 
+if internet is False:
+    st.error("Internet connection is required for this function.")
+    st.stop()
+    
 try:
     load_keys("current_dir")
     current_dir = st.session_state._current_dir

@@ -1,12 +1,16 @@
 #protein advanced search
 import streamlit as st
-import streamlit.components.v1 as components
 import sys, os
 import glob
 import pandas as pd
 
 from Bio.PDB import PDBList
-from rcsbapi.search import AttributeQuery, Attr, TextQuery
+
+try:
+    from rcsbapi.search import AttributeQuery, Attr, TextQuery
+    internet = True
+except:
+    internet = False
 
 import py3Dmol
 
@@ -24,7 +28,7 @@ def view_prot(prot):
     Prot.setStyle({'cartoon':{'arrows':True, 'tubes':True, 'style':'oval', 'color':'white'}})
     view.zoomTo()
     view.show()
-    components.html(view._make_html(), height = 500,width=500)
+    st.iframe(view._make_html(), height = 500,width=1000)
 
 if 'result_prot_list' not in st.session_state:
     st.session_state.result_prot_list = []
@@ -32,6 +36,10 @@ if 'result_prot_list' not in st.session_state:
 load_keys("local")
 local = st.session_state._local
 
+if internet is False:
+    st.error("Internet connection is required for this function.")
+    st.stop()
+    
 try:
     load_keys("current_dir")
     current_dir = st.session_state._current_dir

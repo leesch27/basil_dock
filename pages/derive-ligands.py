@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import sys, os
 from io import StringIO, BytesIO
 import glob
@@ -29,7 +28,7 @@ def view_ligand(mol):
     style={'stick':{'colorscheme':'greenCarbon','radius':0.2}}
     )
     view.zoomTo()
-    components.html(view._make_html(), height = 500,width=500)
+    st.iframe(view._make_html(), height = 500,width=1000)
 
 load_keys("local")
 local = st.session_state._local
