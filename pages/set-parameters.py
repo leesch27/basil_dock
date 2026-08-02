@@ -50,7 +50,7 @@ with st.form("enter_docking_parameters"):
     if submitted:
         # make sure all session state keys (excluding local and widget values) are empty before proceeding
         for key in st.session_state.keys():
-            if (key != "local") and ("_" not in key[0]):
+            if (key != "local") and (key != "current_dir") and (key != "docking_method") and ("_" not in key[0]):
                 del st.session_state[key]
 
         # initialize vars
