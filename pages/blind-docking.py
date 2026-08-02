@@ -400,7 +400,7 @@ if st.button("Dock!"):
         try:
             df2 = df[["Frame", "Score", "Ligand", "Pocket", "UNL1"]].copy()
         except KeyError as e:
-            df2 = pd.read_csv(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{docking_engine}.csv')
+            df2 = pd.read_csv(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}.csv')
         largest_array_column = get_largest_array_column(df, "Blind docking")
         expand_df(all_ifps, df, df2, largest_array_column)
         st.write(f"Filling expanded dataframe...")

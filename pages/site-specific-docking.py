@@ -279,7 +279,10 @@ if st.button("Dock!"):
         # save csv
         save_dataframe(df, engine_name, pdb_id, ligs)
         st.write(f"Expanding dataframe...")
-        df2 = df[["Frame", "Score", "Ligand", "UNL1"]].copy()
+        try:
+            df2 = df[["Frame", "Score", "Ligand", "UNL1"]].copy()
+        except KeyError as e:
+            df2 = pd.read_csv(f'data/{pdb_id}_{str(len(ligs))}_ligands_docking_information_{engine_name}.csv')
         largest_array_column = get_largest_array_column(df, "Site-specific docking")
         expand_df(all_ifps, df, df2, largest_array_column)
         st.write(f"Filling expanded dataframe...")
