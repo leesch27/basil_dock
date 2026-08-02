@@ -364,9 +364,9 @@ if st.button("Return to parameter selection", type="primary", icon="🏠"):
         vina_out_2_dir = os.path.join('data', 'vina_out_2','*')
         smina_out_dir = os.path.join('data', 'smina_out', '*')
         smina_out_2_dir = os.path.join('data', 'smina_out_2','*')
-        PDB_dir = os.path.join('data', 'PDB_files', '*')
-        MOL2_dir = os.path.join('data', 'MOL2_files', '*')
-        PDBQT_dir = os.path.join('data', 'PDBQT_files', '*')
+        PDB_dir = os.path.join('data', 'PDB_files', '*.*')
+        MOL2_dir = os.path.join('data', 'MOL2_files', '*.*')
+        PDBQT_dir = os.path.join('data', 'PDBQT_files', '*.*')
         try:
             for file in glob.glob(vina_out_dir):
                 subprocess.run(["rm", file], check=True)
