@@ -4,6 +4,7 @@ import sys, os
 import pandas as pd
 import subprocess
 import zipfile
+import glob
 
 from rdkit import Chem
 import prolif as plf
@@ -328,5 +329,59 @@ if st.button("Dock!"):
                 on_click="ignore",
             )   
 
-st.page_link("pages/docking-analysis.py", label="Analyze docking results", icon="📊")
-st.page_link("pages/set-parameters.py", label="Return to parameter selection", icon="🏠")
+# add code to delete result files after clicking button? to free up space/reduce error probability?
+if st.button("Analyze docking results", type="primary", icon="📊"):
+    if local == False:
+        vina_out_dir = os.path.join('data', 'vina_out', '*')
+        vina_out_2_dir = os.path.join('data', 'vina_out_2','*')
+        smina_out_dir = os.path.join('data', 'smina_out', '*')
+        smina_out_2_dir = os.path.join('data', 'smina_out_2','*')
+        PDB_dir = os.path.join('data', 'PDB_files', '*')
+        MOL2_dir = os.path.join('data', 'MOL2_files', '*')
+        PDBQT_dir = os.path.join('data', 'PDBQT_files', '*')
+        try:
+            for file in glob.glob(vina_out_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(vina_out_2_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(smina_out_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(smina_out_2_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(PDB_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(MOL2_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(PDBQT_dir):
+                subprocess.run(["rm", file], check=True)
+        except OSError as e:
+            print(f"Not removed {file}: {e}")
+    st.switch_page("pages/docking-analysis.py")
+
+if st.button("Return to parameter selection", type="primary", icon="🏠"):
+    if local == False:
+        vina_out_dir = os.path.join('data', 'vina_out', '*')
+        vina_out_2_dir = os.path.join('data', 'vina_out_2','*')
+        smina_out_dir = os.path.join('data', 'smina_out', '*')
+        smina_out_2_dir = os.path.join('data', 'smina_out_2','*')
+        PDB_dir = os.path.join('data', 'PDB_files', '*')
+        MOL2_dir = os.path.join('data', 'MOL2_files', '*')
+        PDBQT_dir = os.path.join('data', 'PDBQT_files', '*')
+        try:
+            for file in glob.glob(vina_out_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(vina_out_2_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(smina_out_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(smina_out_2_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(PDB_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(MOL2_dir):
+                subprocess.run(["rm", file], check=True)
+            for file in glob.glob(PDBQT_dir):
+                subprocess.run(["rm", file], check=True)
+        except OSError as e:
+            print(f"Not removed {file}: {e}")
+    st.switch_page("pages/set-parameters.py")

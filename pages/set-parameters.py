@@ -19,7 +19,6 @@ def save_keys(key):
 def load_keys(key):
     st.session_state["_" + key] = st.session_state[key]
 
-
 load_keys("local")
 local = st.session_state._local
 title = st.columns([0.25, 0.75])
@@ -49,6 +48,12 @@ with st.form("enter_docking_parameters"):
     submitted = row5[1].form_submit_button("Submit Parameters")
     
     if submitted:
+        # make sure all session state keys (excluding local and widget values) are empty before proceeding
+        for key in st.session_state.keys():
+            if (key != "local") and ("_" not in key[0]):
+                del st.session_state[key]
+
+        # initialize vars
         ligs = []
         orig_filenames = []
         filenames = []
